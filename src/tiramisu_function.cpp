@@ -232,7 +232,7 @@ namespace tiramisu
                 to_time_space_map_str_2 += ",";
             }
         }
-        
+
         std::string ready_time_str = to_time_space_map_str + "]->" + to_time_space_map_str_2 + "]"; // without {} yet
 
         DEBUG(3, tiramisu::str_dump(" using to generate time stamp tmp map " + ready_time_str));
@@ -263,7 +263,7 @@ namespace tiramisu
 
             write_access = isl_union_map_union(write_access, isl_union_map_from_map(isl_map_copy(comput->get_access_relation())));
         }
-        
+
         isl_union_set *iteration_domains = this->get_iteration_domain();
 
         isl_union_map *write_acccess_without_domain = isl_union_map_copy(write_access);
@@ -303,7 +303,7 @@ namespace tiramisu
         DEBUG(3, tiramisu::str_dump(" read after write True dependencies are in the form { last_write_access -> the read statement } : " + std::string(isl_union_map_to_str(read_after_write_dep))));
 
         DEBUG(3, tiramisu::str_dump(" live-in : the computations / statement with these read access have not been written in this function (outside value)  : " + std::string(isl_union_map_to_str(read_from_outside))));
-        
+
         info = isl_union_access_info_from_sink(isl_union_map_copy(write_access));
 
         info = isl_union_access_info_set_schedule_map(info, isl_union_map_copy(isl_schedule));
@@ -316,7 +316,7 @@ namespace tiramisu
         DEBUG(3, tiramisu::str_dump(" write after write dependencies are { last_previous_write -> new write stmt } : " + std::string(isl_union_map_to_str(write_after_write_dep))));
 
         isl_union_map *not_last_writes = isl_union_map_range_factor_range(isl_union_map_copy(write_after_write_dep));
-        
+
         isl_union_map *live_out = isl_union_map_subtract(
             isl_union_map_copy(write_access),
             isl_union_map_copy(not_last_writes));
@@ -326,7 +326,7 @@ namespace tiramisu
         DEBUG(3, tiramisu::str_dump(" live out last access are : " + std::string(isl_union_map_to_str(live_out))));
 
         isl_union_map *read_without_write_stmt = isl_union_map_subtract(isl_union_map_copy(read_access), isl_union_map_copy(write_access));
-        
+
         info = isl_union_access_info_from_sink(isl_union_map_copy(write_access));
 
         info = isl_union_access_info_set_schedule_map(info, isl_union_map_copy(isl_schedule));
@@ -338,7 +338,7 @@ namespace tiramisu
         flow = isl_union_access_info_compute_flow(info);
 
         //DEBUG(3, tiramisu::str_dump(" dependency analysis for WAR dep : "+std::string(isl_union_flow_to_str(flow))));
-        
+
         isl_union_map *anti_dependencies = isl_union_flow_get_full_may_dependence(flow);
 
         DEBUG(3, tiramisu::str_dump(" write after read anti_dependencies are in the form { last_previous_read -> new write stmt } : " + std::string(isl_union_map_to_str(anti_dependencies))));
@@ -354,7 +354,7 @@ namespace tiramisu
         this->live_in_access = read_from_outside;
 
         this->live_out_access = live_out;
-        
+
 
         DEBUG_INDENT(-4);
     }
@@ -1385,7 +1385,7 @@ namespace tiramisu
   */
     void function::gen_isl_ast()
     {
-        
+
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
         // Check that time_processor representation has already been computed,
@@ -1441,7 +1441,7 @@ namespace tiramisu
 
             ast_build = isl_ast_build_set_iterators(ast_build, iterators);
         }
-      
+
         // Intersect the iteration domain with the domain of the schedule.
         isl_union_map *umap =
             isl_union_map_intersect_domain(
@@ -1449,7 +1449,7 @@ namespace tiramisu
                 isl_union_set_copy(this->get_trimmed_time_processor_domain()));
 
         DEBUG(3, tiramisu::str_dump("Schedule:", isl_union_map_to_str(this->get_schedule())));
-        
+
         DEBUG(3, tiramisu::str_dump("Iteration domain:",
                                     isl_union_set_to_str(this->get_iteration_domain())));
         DEBUG(3, tiramisu::str_dump("Trimmed Time-Processor domain:",
@@ -1462,9 +1462,9 @@ namespace tiramisu
 
         this->ast = isl_ast_build_node_from_schedule_map(ast_build, umap);
         isl_ast_build_free(ast_build);
-        
+
         DEBUG_INDENT(-4);
-    
+
     }
     /**
      * Generate an isl AST for the function after transformation.
@@ -1473,7 +1473,7 @@ namespace tiramisu
     {
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
-       
+
         // Check that time_processor representation has already been computed,
         assert(this->get_trimmed_time_processor_domain() != NULL);
         assert(this->get_aligned_identity_schedules() != NULL);
@@ -1529,7 +1529,7 @@ namespace tiramisu
         }
         //Differnce between normal and after transformation generation
         this->gen_time_space_domain();
-     
+
         // Intersect the iteration domain with the domain of the schedule.
         isl_union_map *umap =
             isl_union_map_intersect_domain(
@@ -1552,7 +1552,7 @@ namespace tiramisu
         isl_ast_build_free(ast_build);
 
         DEBUG_INDENT(-4);
-    }  
+    }
 
     void tiramisu::function::allocate_and_map_buffers_automatically()
     {
@@ -2787,24 +2787,24 @@ namespace tiramisu
         DEBUG_INDENT(4);
         // align schedules and order schedules
         this->align_schedules();
-        
+
         this->gen_ordering_schedules();
-        
+
         // could save default schedules and order here
         this->calculate_dep_flow();
-        
+
         DEBUG_INDENT(-4);
     }
 
     bool tiramisu::function::check_legality_for_function()
     {
-        
+
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
 
         //this->perform_full_dependency_analysis();
         assert(this->dep_read_after_write != NULL);
-        
+
         isl_union_map *all_deps = isl_union_map_range_factor_domain(
             isl_union_map_copy(this->dep_read_after_write));
 
@@ -2868,7 +2868,7 @@ namespace tiramisu
         DEBUG_INDENT(-4);
 
         isl_union_map_free(universe_of_all_deps);
-        
+
         return over_all_legality;
     }
 
@@ -2982,8 +2982,13 @@ namespace tiramisu
         this->gen_ordering_schedules();
     }
 
-    bool tiramisu::function::loop_unrolling_is_legal(tiramisu::var i, std::vector<tiramisu::computation *> fused_computations)
-    {
+bool tiramisu::function::loop_unrolling_is_legal(int i , std::vector<tiramisu::computation *> fused_computations)
+{
+    return loop_unrolling_is_legal(var(fused_computations[0]->get_loop_level_names()[i]),fused_computations);
+}
+
+bool tiramisu::function::loop_unrolling_is_legal(tiramisu::var i , std::vector<tiramisu::computation *> fused_computations)
+{
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
 
@@ -2997,7 +3002,7 @@ namespace tiramisu
         computation *first_computation = fused_computations[0];
 
         DEBUG(3, tiramisu::str_dump(" unrolling check for var : " + i.get_name()));
-        
+
 
         std::vector<std::string> original_loop_level_names = first_computation->get_loop_level_names();
 
@@ -3036,7 +3041,7 @@ namespace tiramisu
         computation *first_computation = fused_computations[0];
 
         DEBUG(3, tiramisu::str_dump(" var parallelization check is : " + par_dim_var.get_name()));
-        
+
         std::vector<std::string> original_loop_level_names = first_computation->get_loop_level_names();
 
         std::vector<int> dimensions =
@@ -3045,7 +3050,7 @@ namespace tiramisu
         first_computation->check_dimensions_validity(dimensions);
 
         bool result = this->loop_parallelization_is_legal(dimensions[0], fused_computations);
-        
+
         DEBUG_INDENT(-4);
 
         return result;
@@ -3068,7 +3073,7 @@ namespace tiramisu
         int par_dim = tiramisu::loop_level_into_dynamic_dimension(dim_parallel);
 
         DEBUG(3, tiramisu::str_dump(" par dim number is : " + std::to_string(par_dim)));
-        
+
         // Extracting deps
 
         isl_union_map *read_after_write_dep = isl_union_map_range_factor_domain(
@@ -3088,8 +3093,8 @@ namespace tiramisu
         all_deps = isl_union_map_union(all_deps, write_after_write_dep);
 
         DEBUG(3, tiramisu::str_dump(" all the dependencies involved are : " + std::string(isl_union_map_to_str(all_deps))));
-        
-        
+
+
         // all current schedules in 1 union map
         std::string empty_union = "{}";
         std::string empty_time = "";
@@ -3108,7 +3113,7 @@ namespace tiramisu
         }
 
         DEBUG(3, tiramisu::str_dump(" all the used schedules are  : " + std::string(isl_union_map_to_str(schedules))));
-        
+
         // application to discard unused dep & represent them in their time space
 
         all_deps = isl_union_map_apply_range(all_deps, isl_union_map_copy(schedules));
@@ -3116,8 +3121,8 @@ namespace tiramisu
         all_deps = isl_union_map_apply_domain(all_deps, isl_union_map_copy(schedules));
 
         DEBUG(3, tiramisu::str_dump(" all the used dependencies union map are  : " + std::string(isl_union_map_to_str(all_deps))));
-        
-        
+
+
         if (isl_union_map_is_empty(all_deps))
         {
             DEBUG(3, tiramisu::str_dump(" No dependencies , parallelism is legal by default "));
@@ -3128,7 +3133,7 @@ namespace tiramisu
         isl_map *equation_map = isl_map_from_union_map(all_deps);
 
         DEBUG(3, tiramisu::str_dump(" all the used dependencies after transformed to map are  : " + std::string(isl_map_to_str(equation_map))));
-        
+
         bool overall_legality = false;
 
         /*
