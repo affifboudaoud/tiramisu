@@ -5,7 +5,7 @@
 #include <exception>
 
 #include <stdexcept>
-#define TIME_LIMIT 15
+#define TIME_LIMIT 1000
 struct TimeLimitException : public std::exception
     {
         const char * what () const throw ()
@@ -637,6 +637,163 @@ bool is_identity(std::vector < std::vector<int> > matrix){
 /*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
+  std::vector < std::vector<int> >  get_neighbor_matrix_random_element(std::vector < std::vector<int> >matrix ,int depth)
+{
+    //std::cout<<"stratred random"<<std::endl;
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int mx = 1;
+    int m = 0;
+    int x =-1,y=-1;
+    
+    
+    int mm=-8;
+    int useless = 0;
+    int steps = 0;
+    bool bad_case=0;
+    int f = -1;
+    bool found_elgibile = false;
+    while(useless<= depth*depth){
+            x = rand()%depth;
+            y = rand()%depth;
+            m = result.at(x).at(y);
+            bad_case=0;
+            for(int i = 0; i < depth; i++){
+                if (i==x) continue;
+                if(result.at(i).at(y)!=0)
+                {
+                        f = i;
+                        break;
+                }
+                if(i==depth-1) bad_case=1;
+            }
+            
+            if(bad_case || f==-1) {
+                useless++;
+                continue;
+            }
+            
+            int s =1;
+            if (m*result.at(f).at(y)<0) s=s*-1;
+            
+            for(int j = 0; j < depth; j++){
+                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
+            }
+            
+            mm = matrix.at(x).at(y);
+            
+            if(m!=mm){return result;}else{continue;} 
+            }
+    if (useless>= depth*depth) std::cout<<"useless"<<std::endl;
+    x = rand()%depth;
+    y = rand()%depth;
+    result.at(x).at(y)=result.at(x).at(y)-(rand()%2 -1);
+    return result;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> >  get_neighbor_matrix(std::vector < std::vector<int> >matrix ,int depth)
+{
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int mx = 1;
+    int m = 0;
+    int x =-1,y=-1;
+    for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                        std::cout<<result.at(i).at(j);
+                }
+                std::cout<<std::endl;
+    }
+    for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                    if(std::abs(m) < std::abs(result.at(i).at(j)))
+                    {
+                        m = result.at(i).at(j);
+                        //std::cout<<"biggest elemnt in the matrix iside: "<<m<<std::endl;
+                        x = i;
+                        y = j;
+                    }
+                }
+    }
+    //std::cout << "X: "<<x<<"y: "<<y<<"m:"<<m<<std::endl;
+    //std::cout<<"biggest elemnt in the matrix is: "<<m<<std::endl;
+    int mm=-8;
+    int useless = 0;
+    int steps = 0;
+    bool bad_case=0;
+    int f = -1;
+    
+    while(useless<= depth*depth){
+            steps+=1;
+            bad_case=0;
+            for(int i = 0; i < depth; i++){
+                if (i==x) continue;
+                if(result.at(i).at(y)!=0)
+                {
+                        f = i;
+                        break;
+                }
+                if(i==depth-1) bad_case=1;
+            }
+            
+            if(bad_case) break;
+            int s =1;
+            //std::cout<<"x: "<<x <<std::endl;
+            //std::cout<<"f: "<<f <<std::endl;
+            //std::cout<<"y: "<<y <<std::endl;
+            if (m*result.at(f).at(y)<0) s=s*-1;
+            
+            for(int j = 0; j < depth; j++){
+                    
+                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
+            }
+            
+            mm =0;
+            int new_x=-1, new_y=-1;
+            for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                    if(std::abs(mm) < std::abs(result.at(i).at(j)))
+                    {
+                        mm = result.at(i).at(j);
+                        new_x = i;
+                        new_y = j;
+                    }
+                }
+            }
+            //std::cout << "new X: "<<new_x<<"new y: "<<new_y<<"mm:"<<mm<<std::endl;
+            for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                        std::cout<<result.at(i).at(j);
+                }
+                std::cout<<std::endl;
+    }
+            if(!(x== new_x && y==new_y && m==mm)){return result;}else{return get_neighbor_matrix_random_element(matrix, depth);} 
+            m=mm;
+            x = new_x;
+            y = new_y;
+            }
+    if(bad_case) return get_neighbor_matrix_random_element(matrix, depth);
+    return result;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
   std::vector < std::vector<int> >  beam_search::get_random_matrix(int depth)
 {
     int max_depth = 6;
@@ -917,7 +1074,15 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     bool illegal = false;
     bool first_time_illegal = true;
     syntax_tree *child = *iterator;
-
+    /*
+    std::vector <  std::vector<int> >  randomU(3);
+    randomU.at(0)= std::vector<int>(3);randomU.at(0).at(0)=1;randomU.at(0).at(1)=3;randomU.at(0).at(2)=0;
+    randomU.at(1)= std::vector<int>(3);randomU.at(1).at(0)=7;randomU.at(1).at(1)=22;randomU.at(1).at(2)=0;
+    randomU.at(2)= std::vector<int>(3);randomU.at(2).at(0)=-6;randomU.at(2).at(1)=-13;randomU.at(2).at(2)=1;
+    child->new_optims.back().matrix = randomU;
+    matrices.push_back(child->new_optims.back().matrix);
+    nb_matrices++;
+    */
     while (iterator != children.end())
     {
 
@@ -939,13 +1104,13 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         
         //std::vector<std::vector<int>> vec {{1,0,0},{0,1,0},{0,0,1}};
         //add the matrix to optim.info
+        
         child->new_optims.back().matrix = get_random_matrix(shape);
 
-        //std::cout<<nb_matrices<<std::endl;
-        //std::cout<<nb_steps<<std::endl;
+        
         child->bounds_matrix = bounds_mat;
         child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
-
+        
         if(check_if_repeated(child->new_optims.back().matrix, matrices)) continue;
         
 

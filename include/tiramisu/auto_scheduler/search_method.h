@@ -18,7 +18,7 @@ const std::vector<optimization_type> DEFAULT_OPTIMIZATIONS_ORDER_MATRIX = {MATRI
 const int NB_OPTIMIZATIONS = DEFAULT_OPTIMIZATIONS_ORDER.size();
 const int NB_OPTIMIZATIONS_MATRIX = DEFAULT_OPTIMIZATIONS_ORDER_MATRIX.size();
 const int DEFAULT_MAX_DEPTH = INT_MAX;
-const int MAX_NB_STEPS = 100000;
+const int MAX_NB_STEPS = 10000;
 
 /**
   * An abstract class that represents a search method.
