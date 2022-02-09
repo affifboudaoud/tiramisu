@@ -616,6 +616,20 @@ std::vector<std::vector<int>>  multiply(const std::vector<std::vector<int>> & m1
             }
             return result;
         }
+std::vector<std::vector<int>>  multiply_plus(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2,const std::vector<std::vector<int>>  last_col)
+        {
+        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()+1));
+
+            for(std::size_t row = 0; row < result.size(); ++row) {
+                for(std::size_t col = 0; col < result.at(0).size()-1; ++col) {
+                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
+                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
+                    }
+                }
+                result.at(row).at(result.at(0).size()-1)= last_col[row][last_col.at(0).size()-1];
+            }
+            return result;
+        }
 
 /*
 check if a matrix is the identity matrix
@@ -839,6 +853,24 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
         return p;
         }
     }
+    std::vector<int> format_bound(int bound, int id_rank, int size, bool is_lower, bool with_bounds){
+          std::vector<int> output;
+          
+          for(int i=0;i< size ;i++){
+              if(i==id_rank){
+                if(is_lower){ output.push_back(-1);}
+                else{output.push_back(1);}               
+              }else{
+                output.push_back(0);
+              }
+          }
+          if(with_bounds){
+            if(is_lower){ output.push_back(-bound);}
+            else{ output.push_back(bound);}
+        }
+        return output;
+    }
+    
  std::vector<std::vector<int>> get_ast_isl_bound_matrice(syntax_tree& ast){
 
         std::vector<std::vector<int>> isl_ast_mat;
@@ -868,10 +900,29 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             }
             else{stop=1;}
         }
-
+        
+     
         return isl_ast_mat;
 }
+std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_isl_constraint_matrice( std::vector<std::vector<int>> isl_ast_mat){
 
+        std::vector< std::vector<int>> constraint_mat;
+        std::vector< std::vector<int>> constraint_mat_with_bounds;
+       
+        for (int i = 0; i < isl_ast_mat.size(); i++) {
+        for (int j = 0; j < isl_ast_mat[i].size(); j++)
+            {
+               if (j==0){  
+                    constraint_mat.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),true,false));  
+                    constraint_mat_with_bounds.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),true,true));  
+                } else{
+                    constraint_mat.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),false,false)); 
+                    constraint_mat_with_bounds.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),false,true)); 
+                }       
+            }
+        }
+        return std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> (constraint_mat,constraint_mat_with_bounds);
+}
 
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
@@ -904,8 +955,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     //std::map <std::string,std::string>* corr_map;
     std::vector<std::vector<int>> bounds_mat;
+    std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
     bounds_mat = get_ast_isl_bound_matrice(ast);
-
+    constraint_mats = get_ast_isl_constraint_matrice(bounds_mat);
+    
+     
     // Add the corr_map to the ast structue
     //corr_map = get_corr_map_from_isl(ast);
     //Hash the program string to get a unique seed for each program 
@@ -944,8 +998,33 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         //std::cout<<nb_matrices<<std::endl;
         //std::cout<<nb_steps<<std::endl;
         child->bounds_matrix = bounds_mat;
+        child->constraint_matrix = constraint_mats.second;
         child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
-
+        child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
+        std::cout<<"O Bound\n";
+        for (int i = 0; i <  child->bounds_matrix.size(); i++) {
+        for (int j = 0; j <  child->bounds_matrix[i].size(); j++)
+             std::cout << child->bounds_matrix[i][j] << " ";
+         std::cout <<  std::endl;
+        }
+        std::cout<<"T Bound\n";
+        for (int i = 0; i <  child->transformed_bounds_matrix.size(); i++) {
+        for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
+             std::cout << child->transformed_bounds_matrix[i][j] << " ";
+         std::cout <<  std::endl;
+        }
+        std::cout<<"O constraint\n";
+        for (int i = 0; i <  child->constraint_matrix.size(); i++) {
+        for (int j = 0; j <  child->constraint_matrix[i].size(); j++)
+             std::cout << child->constraint_matrix[i][j] << " ";
+         std::cout <<  std::endl;
+        }
+        std::cout<<"T constraint\n";
+        for (int i = 0; i <  child->transformed_constraint_matrix.size(); i++) {
+        for (int j = 0; j < child->transformed_constraint_matrix[i].size(); j++)
+             std::cout << child->transformed_constraint_matrix[i][j] << " ";
+         std::cout <<  std::endl;
+        }
         if(check_if_repeated(child->new_optims.back().matrix, matrices)) continue;
         
 
