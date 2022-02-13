@@ -1742,34 +1742,35 @@ state_computation::state_computation(state_computation * reference)
         return result;
     }
 
-    bool syntax_tree::program_is_legal() const
+    bool syntax_tree::program_is_legal(syntax_tree& ast_i) const
     {
 
-        stage_isl_states();
-
-        this->fct->prepare_schedules_for_legality_checks(false);
-        
-        bool result = this->fct->check_legality_for_function();
-
-        isl_ast_node *ast_i = this->fct->ast; 
+       
         //
         int stop = 0;
         bool inc_is_one = true;
+        apply_optimizations_matrix(ast_i);
+        // Compile the program to an object file
+        fct->lift_dist_comps();
+        fct->gen_time_space_domain();
+        fct->gen_isl_ast();
+     
+         isl_ast_node *ast_isl = this->fct->ast; 
         while(stop!=1)
         {   
-            if(isl_ast_node_get_type(ast_i)==isl_ast_node_for)
+            if(isl_ast_node_get_type(ast_isl)==isl_ast_node_for)
             {
-                if(isl_val_get_num_si(isl_ast_expr_get_val(isl_ast_node_for_get_inc(ast_i)))!=1){
+                if(isl_val_get_num_si(isl_ast_expr_get_val(isl_ast_node_for_get_inc(ast_isl)))!=1){
                     inc_is_one = false;
                 };              
-                ast_i= isl_ast_node_for_get_body(ast_i);
+                ast_isl= isl_ast_node_for_get_body(ast_isl);
             }
             else{stop=1;} 
         }
         
-        recover_isl_states();
+        std::cout<<"Incrment is :"<<inc_is_one<<"\n";
 
-        return (result && inc_is_one);
+        return (inc_is_one);
     }
 
     void syntax_tree::print_computations_accesses() const

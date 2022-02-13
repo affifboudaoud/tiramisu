@@ -5,7 +5,7 @@
 #include <exception>
 
 #include <stdexcept>
-#define TIME_LIMIT 15
+#define TIME_LIMIT 1000
 struct TimeLimitException : public std::exception
     {
         const char * what () const throw ()
@@ -651,6 +651,163 @@ bool is_identity(std::vector < std::vector<int> > matrix){
 /*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
+  std::vector < std::vector<int> >  get_neighbor_matrix_random_element(std::vector < std::vector<int> >matrix ,int depth)
+{
+    //std::cout<<"stratred random"<<std::endl;
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int mx = 1;
+    int m = 0;
+    int x =-1,y=-1;
+    
+    
+    int mm=-8;
+    int useless = 0;
+    int steps = 0;
+    bool bad_case=0;
+    int f = -1;
+    bool found_elgibile = false;
+    while(useless<= depth*depth){
+            x = rand()%depth;
+            y = rand()%depth;
+            m = result.at(x).at(y);
+            bad_case=0;
+            for(int i = 0; i < depth; i++){
+                if (i==x) continue;
+                if(result.at(i).at(y)!=0)
+                {
+                        f = i;
+                        break;
+                }
+                if(i==depth-1) bad_case=1;
+            }
+            
+            if(bad_case || f==-1) {
+                useless++;
+                continue;
+            }
+            
+            int s =1;
+            if (m*result.at(f).at(y)<0) s=s*-1;
+            
+            for(int j = 0; j < depth; j++){
+                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
+            }
+            
+            mm = matrix.at(x).at(y);
+            
+            if(m!=mm){return result;}else{continue;} 
+            }
+    if (useless>= depth*depth) std::cout<<"useless"<<std::endl;
+    x = rand()%depth;
+    y = rand()%depth;
+    result.at(x).at(y)=result.at(x).at(y)-(rand()%2 -1);
+    return result;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> >  get_neighbor_matrix(std::vector < std::vector<int> >matrix ,int depth)
+{
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int mx = 1;
+    int m = 0;
+    int x =-1,y=-1;
+    for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                        std::cout<<result.at(i).at(j);
+                }
+                std::cout<<std::endl;
+    }
+    for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                    if(std::abs(m) < std::abs(result.at(i).at(j)))
+                    {
+                        m = result.at(i).at(j);
+                        //std::cout<<"biggest elemnt in the matrix iside: "<<m<<std::endl;
+                        x = i;
+                        y = j;
+                    }
+                }
+    }
+    //std::cout << "X: "<<x<<"y: "<<y<<"m:"<<m<<std::endl;
+    //std::cout<<"biggest elemnt in the matrix is: "<<m<<std::endl;
+    int mm=-8;
+    int useless = 0;
+    int steps = 0;
+    bool bad_case=0;
+    int f = -1;
+    
+    while(useless<= depth*depth){
+            steps+=1;
+            bad_case=0;
+            for(int i = 0; i < depth; i++){
+                if (i==x) continue;
+                if(result.at(i).at(y)!=0)
+                {
+                        f = i;
+                        break;
+                }
+                if(i==depth-1) bad_case=1;
+            }
+            
+            if(bad_case) break;
+            int s =1;
+            //std::cout<<"x: "<<x <<std::endl;
+            //std::cout<<"f: "<<f <<std::endl;
+            //std::cout<<"y: "<<y <<std::endl;
+            if (m*result.at(f).at(y)<0) s=s*-1;
+            
+            for(int j = 0; j < depth; j++){
+                    
+                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
+            }
+            
+            mm =0;
+            int new_x=-1, new_y=-1;
+            for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                    if(std::abs(mm) < std::abs(result.at(i).at(j)))
+                    {
+                        mm = result.at(i).at(j);
+                        new_x = i;
+                        new_y = j;
+                    }
+                }
+            }
+            //std::cout << "new X: "<<new_x<<"new y: "<<new_y<<"mm:"<<mm<<std::endl;
+            for(int i = 0; i < depth; i++){
+                for(int j = 0; j< depth; j++){
+                        std::cout<<result.at(i).at(j);
+                }
+                std::cout<<std::endl;
+    }
+            if(!(x== new_x && y==new_y && m==mm)){return result;}else{return get_neighbor_matrix_random_element(matrix, depth);} 
+            m=mm;
+            x = new_x;
+            y = new_y;
+            }
+    if(bad_case) return get_neighbor_matrix_random_element(matrix, depth);
+    return result;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
   std::vector < std::vector<int> >  beam_search::get_random_matrix(int depth)
 {
     int max_depth = 6;
@@ -971,7 +1128,15 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     bool illegal = false;
     bool first_time_illegal = true;
     syntax_tree *child = *iterator;
-
+    
+    std::vector <  std::vector<int> >  randomU(3);
+    randomU.at(0)= std::vector<int>(3);randomU.at(0).at(0)=1;randomU.at(0).at(1)=2;randomU.at(0).at(2)=5;
+    randomU.at(1)= std::vector<int>(3);randomU.at(1).at(0)=6;randomU.at(1).at(1)=13;randomU.at(1).at(2)=28;
+    randomU.at(2)= std::vector<int>(3);randomU.at(2).at(0)=6;randomU.at(2).at(1)=9;randomU.at(2).at(2)=37;
+    child->new_optims.back().matrix = randomU;
+    matrices.push_back(child->new_optims.back().matrix);
+    nb_matrices++;
+    
     while (iterator != children.end())
     {
 
@@ -991,17 +1156,18 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         syntax_tree* new_ast = new syntax_tree();
         new_ast = child->copy_ast();
         
-        //std::vector<std::vector<int>> vec {{1,0,0},{0,1,0},{0,0,1}};
+        std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
-        child->new_optims.back().matrix = get_random_matrix(shape);
+        
+        child->new_optims.back().matrix = child->new_optims.back().matrix = vec;
+        // get_neighbor_matrix_random_element(matrices.at(nb_matrices-1), shape);
 
-        //std::cout<<nb_matrices<<std::endl;
-        //std::cout<<nb_steps<<std::endl;
+        
         child->bounds_matrix = bounds_mat;
         child->constraint_matrix = constraint_mats.second;
         child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
         child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
-        std::cout<<"O Bound\n";
+        /*std::cout<<"O Bound\n";
         for (int i = 0; i <  child->bounds_matrix.size(); i++) {
         for (int j = 0; j <  child->bounds_matrix[i].size(); j++)
              std::cout << child->bounds_matrix[i][j] << " ";
@@ -1024,13 +1190,13 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         for (int j = 0; j < child->transformed_constraint_matrix[i].size(); j++)
              std::cout << child->transformed_constraint_matrix[i][j] << " ";
          std::cout <<  std::endl;
-        }
+        }*/
         if(check_if_repeated(child->new_optims.back().matrix, matrices)) continue;
         
 
         child->transform_ast();
 
-        if (!child->program_is_legal()) {
+        if (!child->ast_is_legal()) {
             illegal=true;
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 // print deleted Ast
@@ -1052,152 +1218,175 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             child = new_ast;
         }
         else {
+            if (child->program_is_legal(*child)){
+                    matrices.push_back(child->new_optims.back().matrix);
+                    nb_matrices++;
+                    ++iterator;
 
-            matrices.push_back(child->new_optims.back().matrix);
-            nb_matrices++;
-            ++iterator;
-
-            first_time_illegal=true;
-            illegal = false;
-            if (std::atoi(read_env_var("AS_VERBOSE"))==1){
-                child->print_previous_optims();
-                std::cout << "\n-----------" << std::endl;
-                child->print_new_optims();
-                child->print_ast();
-                child->print_isl_states();
-                std::cout << "\n<legal>\n";
-            }
-            
-            int fd[2];
-            
-            // create pipe descriptors
-	        pipe(fd);
-            timeout=0;
-            child_done=0;
-            cont = false;
-            std::vector<float> measurements;
-            
-            pid_t pid, ppid;
-            ppid = getpid();
-            pid = fork();
-
-            if (pid == -1) {
-                perror("fork failed");
-                exit(1);
-            } else if (pid == 0) {
-                measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
-                int size =measurements.size();
-                float ar[measurements.size()];
-                for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
-                close(fd[0]);
-                write(fd[1], &size, sizeof(size));
-                
-                write(fd[1], &ar, sizeof(ar));
-                
-                close(fd[1]);
-                _exit(1);
-            }
-
-            // set up the signal handlers after forking so the child doesn't inherit them
-
-            signal(SIGALRM, alarm_handler);
-            signal(SIGCHLD, child_handler);
-            signal(SIGUSR1,sig_usr);
-              // install an alarm to be fired after TIME_LIMIT
-            
-            alarm(TIME_LIMIT);
-            
-            pause();
-
-            if (timeout) {
-                
+                    first_time_illegal=true;
+                    illegal = false;
+                    if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                        child->print_previous_optims();
+                        std::cout << "\n-----------" << std::endl;
+                        child->print_new_optims();
+                        child->print_ast();
+                        child->print_isl_states();
+                        std::cout << "\n<legal>\n";
+                    }
                     
-                int result = waitpid(pid, NULL, WNOHANG);
-                if (result == 0) {
-                    // child still running, so kill it
+                    int fd[2];
                     
+                    // create pipe descriptors
+                    pipe(fd);
+                    timeout=0;
+                    child_done=0;
+                    cont = false;
+                    std::vector<float> measurements;
                     
-                    // Remove all the optimizations
-                    exec_eval->fct->reset_schedules();
-                    measurements.clear();
-                    measurements.push_back(std::numeric_limits<float>::infinity());
-                    // cancel any previously set alarm 
-                    alarm(0); 
-                    kill(pid, 9);
+                    pid_t pid, ppid;
+                    ppid = getpid();
+                    pid = fork();
+
+                    if (pid == -1) {
+                        perror("fork failed");
+                        exit(1);
+                    } else if (pid == 0) {
+                        measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                        int size =measurements.size();
+                        float ar[measurements.size()];
+                        for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
+                        close(fd[0]);
+                        write(fd[1], &size, sizeof(size));
+                        
+                        write(fd[1], &ar, sizeof(ar));
+                        
+                        close(fd[1]);
+                        _exit(1);
+                    }
+
+                    // set up the signal handlers after forking so the child doesn't inherit them
+
+                    signal(SIGALRM, alarm_handler);
+                    signal(SIGCHLD, child_handler);
+                    signal(SIGUSR1,sig_usr);
+                    // install an alarm to be fired after TIME_LIMIT
                     
+                    alarm(TIME_LIMIT);
                     
+                    pause();
+
+                    if (timeout) {
+                        
+                            
+                        int result = waitpid(pid, NULL, WNOHANG);
+                        if (result == 0) {
+                            // child still running, so kill it
+                            
+                            
+                            // Remove all the optimizations
+                            exec_eval->fct->reset_schedules();
+                            measurements.clear();
+                            measurements.push_back(std::numeric_limits<float>::infinity());
+                            // cancel any previously set alarm 
+                            alarm(0); 
+                            kill(pid, 9);
+                            
+                            
+                        
+                            waitpid(-1,NULL,0);
+                        } else {
+                            
+                            int size = 0;
+                            close(fd[1]);
+                            read(fd[0], &size, sizeof(int));
+                            float ar[size];
+                            read(fd[0], &ar, size*sizeof(float));
+                            for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                            close(fd[0]);
+                            
+                        }
+                        
+                        
+                    }else if (child_done) {
+                        
+                        int size =0;
+                        close(fd[1]);
+                        read(fd[0], &size, sizeof(int));
+                        float ar[size];
+                        read(fd[0], &ar, size*sizeof(float));
+                        for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                        close(fd[0]);
+                        
+                        waitpid(-1,NULL,0);
+                    }else if(cont){ 
+                        alarm(0);
+                        int size=0;
+                        while(!child_done){}
+                        close(fd[1]);
+                        read(fd[0], &size, sizeof(int));
+                        float ar[size];
+                        read(fd[0], &ar, size*sizeof(float));
+                        for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                        close(fd[0]);
+                        waitpid(-1,NULL,0);
+                    }
+                    
+                    child->evaluation = min_eval(measurements);
+                    
+                    parent_trace->add_child_path(child, schedules_annotations->size());
+
+                    std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
+
+                    //remove the last two characters }\n
+                    schedule_annot.pop_back();
+                    schedule_annot.pop_back();
+                    
+                    if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
+                        schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
+                    else
+                        schedule_annot += ", \n\"execution_times\" : null\n}\n";
+
+                    schedules_annotations->push_back(schedule_annot);
+
+                    if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                        std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
+                        std::cout << "Evaluation : " << child->evaluation << std::endl;
+                        std::cout << "Number of measurements : " << measurements.size() << std::endl;
+                        std::cout << "===================================" << std::endl << std::endl;
+                    }
+
+                    if (std::isinf(child->evaluation))
+                        std::cerr<< "Evaluation of schedule "<< schedules_annotations->size() <<" failed "<< std::endl;
+
+                    if (child->evaluation < best_evaluation)
+                    {
+                        best_evaluation = child->evaluation;
+                        best_ast = child;
+                    }
+                    to_be_explored.push_back(child);
+                    }
+                    else{
+                        illegal=true;
+                        if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                            // print deleted Ast
+                            child->print_previous_optims();
+                            std::cout << "\n-----------" << std::endl;
+                            child->print_new_optims();
+                            child->print_ast();
+                            child->print_isl_states();
+                            std::cout << "\n<illegal>\n";
+                        }
+
+                        if (first_time_illegal) {
+                            delete child;
+                            //iterator = children.erase(iterator);
+                            //if(iterator == children.end()) iterator--;
+                            first_time_illegal=false;
+                        }
+
+                        child = new_ast;
+                    }
                 
-                    waitpid(-1,NULL,0);
-                } else {
-                    
-                    int size = 0;
-                    close(fd[1]);
-                    read(fd[0], &size, sizeof(int));
-                    float ar[size];
-                    read(fd[0], &ar, size*sizeof(float));
-                    for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                    close(fd[0]);
-                    
-                }
-                
-                
-            }else if (child_done) {
-                
-                int size =0;
-                close(fd[1]);
-                read(fd[0], &size, sizeof(int));
-                float ar[size];
-                read(fd[0], &ar, size*sizeof(float));
-                for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                close(fd[0]);
-                
-                waitpid(-1,NULL,0);
-            }else if(cont){ 
-                alarm(0);
-                int size=0;
-                while(!child_done){}
-                close(fd[1]);
-                read(fd[0], &size, sizeof(int));
-                float ar[size];
-                read(fd[0], &ar, size*sizeof(float));
-                for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                close(fd[0]);
-                waitpid(-1,NULL,0);
-            }
-            
-            child->evaluation = min_eval(measurements);
-            
-            parent_trace->add_child_path(child, schedules_annotations->size());
-
-            std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
-
-            //remove the last two characters }\n
-            schedule_annot.pop_back();
-            schedule_annot.pop_back();
-            
-            if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
-                schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
-            else
-                schedule_annot += ", \n\"execution_times\" : null\n}\n";
-
-            schedules_annotations->push_back(schedule_annot);
-
-            if (std::atoi(read_env_var("AS_VERBOSE"))==1){
-                std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
-                std::cout << "Evaluation : " << child->evaluation << std::endl;
-                std::cout << "Number of measurements : " << measurements.size() << std::endl;
-                std::cout << "===================================" << std::endl << std::endl;
-            }
-
-            if (std::isinf(child->evaluation))
-                std::cerr<< "Evaluation of schedule "<< schedules_annotations->size() <<" failed "<< std::endl;
-
-            if (child->evaluation < best_evaluation)
-            {
-                best_evaluation = child->evaluation;
-                best_ast = child;
-            }
-            to_be_explored.push_back(child);
         }
     }
 
@@ -1218,10 +1407,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 //    std::shuffle(std::begin(children), std::end(children), rand_generator);
 
     // keep the top 'beam_size' children and delete the rest
-    for (int i = beam_size; i < to_be_explored.size(); ++i)
-       delete to_be_explored[i];
+    //for (int i = beam_size; i < to_be_explored.size(); ++i)
+       //delete to_be_explored[i];
 
-    to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
+    //to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
 
     // Search recursively on the best children
     for (syntax_tree *child : to_be_explored)
