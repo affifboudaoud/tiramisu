@@ -1263,6 +1263,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             child = new_ast;
         }
         else {
+<<<<<<< HEAD
+=======
+            if (child->program_is_legal(*child)){
+>>>>>>> fd2d3f3711f5b80b7dd692deb926679a0e23ff77
                     matrices.push_back(child->new_optims.back().matrix);
                     nb_matrices++;
                     ++iterator;
@@ -1408,6 +1412,31 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                         best_ast = child;
                     }
                     to_be_explored.push_back(child);
+<<<<<<< HEAD
+=======
+                    }
+                   else{
+                        illegal=true;
+                        if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                            // print deleted Ast
+                            child->print_previous_optims();
+                            std::cout << "\n-----------" << std::endl;
+                            child->print_new_optims();
+                            child->print_ast();
+                            child->print_isl_states();
+                            std::cout << "\n<illegal>\n";
+                        }
+
+                        if (first_time_illegal) {
+                            delete child;
+                            //iterator = children.erase(iterator);
+                            //if(iterator == children.end()) iterator--;
+                            first_time_illegal=false;
+                        }
+
+                        child = new_ast;
+                    }
+>>>>>>> fd2d3f3711f5b80b7dd692deb926679a0e23ff77
                 
         }
     }

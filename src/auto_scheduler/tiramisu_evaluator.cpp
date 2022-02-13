@@ -140,13 +140,9 @@ std::vector<float> evaluate_by_execution::get_measurements(syntax_tree& ast, boo
 }
 
 std::vector<float> evaluate_by_execution::get_measurements_matrix(syntax_tree& ast, bool exit_on_timeout, float timeout )
-{  
+{
     // Apply all the optimizations
-    apply_optimizations_matrix(ast);
-    // Compile the program to an object file
-    fct->lift_dist_comps();
-    fct->gen_time_space_domain();
-    fct->gen_isl_ast();
+    
     fct->gen_halide_stmt();
     kill(getppid(), SIGUSR1);
 
