@@ -1156,11 +1156,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         syntax_tree* new_ast = new syntax_tree();
         new_ast = child->copy_ast();
         
-        std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
+        //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
         
-        child->new_optims.back().matrix = child->new_optims.back().matrix = vec;
-        // get_neighbor_matrix_random_element(matrices.at(nb_matrices-1), shape);
+        child->new_optims.back().matrix = child->new_optims.back().matrix = get_neighbor_matrix_random_element(matrices.at(nb_matrices-1), shape);
+        
 
         
         child->bounds_matrix = bounds_mat;
