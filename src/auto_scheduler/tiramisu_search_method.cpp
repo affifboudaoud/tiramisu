@@ -5,7 +5,7 @@
 #include <exception>
 
 #include <stdexcept>
-#define TIME_LIMIT 1000
+#define TIME_LIMIT 30
 struct TimeLimitException : public std::exception
     {
         const char * what () const throw ()
