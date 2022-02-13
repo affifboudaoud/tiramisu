@@ -30,7 +30,9 @@ int main(int argc, char **argv){
 	auto_scheduler::search_method *bs = new auto_scheduler::beam_search(beam_size, max_depth, exec_eval, scheds_gen);
 	auto_scheduler::auto_scheduler as(bs, exec_eval);
 	as.set_exec_evaluator(exec_eval);
-	as.sample_search_space("./function750481_explored_schedules.json", true);
+	as.sample_search_space_random_matrix("./function750481_explored_schedules_lower.json", true, 0);
+	as.sample_search_space_random_matrix("./function750481_explored_schedules_upper.json", true, 1);
+	as.sample_search_space_random_matrix("./function750481_explored_schedules_non_trang.json", true, 2);
 	delete scheds_gen;
 	delete exec_eval;
 	delete bs;

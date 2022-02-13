@@ -102,7 +102,7 @@ void auto_scheduler::sample_search_space(std::string filename, bool timeout_sche
         std::cout << "Best execution time : " << searcher->get_best_evaluation() << std::endl;
     }
 }
-void auto_scheduler::sample_search_space_random_matrix(std::string filename, bool timeout_schedules)
+void auto_scheduler::sample_search_space_random_matrix(std::string filename, bool timeout_schedules, int method)
 {
     std::chrono::steady_clock::time_point sampling_start = std::chrono::steady_clock::now();
     fct->reset_schedules();
@@ -147,7 +147,7 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
     }
 
     searcher->set_exec_eval(exec_evaluator);
-    searcher->search_save_matrix(ast, &schedules_annotations, &exploration_trace_root, schedule_timeout);
+    searcher->search_save_matrix(ast, &schedules_annotations, &exploration_trace_root, schedule_timeout,method);
 
     std::string output_json;
 

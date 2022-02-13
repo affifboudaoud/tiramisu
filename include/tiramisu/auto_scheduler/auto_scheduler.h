@@ -86,7 +86,7 @@ public:
      * execution time of each schedule
      */
     void sample_search_space(std::string filename = "./schedules_sample.json", bool timeout_schedules=true);
-    void sample_search_space_random_matrix(std::string filename = "./schedules_sample.json", bool timeout_schedules=true);
+    void sample_search_space_random_matrix(std::string filename = "./schedules_sample.json", bool timeout_schedules=true, int method=0);
 };
 
 }

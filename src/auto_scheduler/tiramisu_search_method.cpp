@@ -214,8 +214,8 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
             std::vector<float> measurements;
             
             
-            pid_t pid, ppid;
-            ppid = getpid();
+            pid_t pid;
+            
             pid = fork();
 
             if (pid == -1) {
@@ -510,13 +510,13 @@ std::vector < std::vector < std::vector<int> > > get_random_matrcies(int nb_out_
             }
             int mm=-8;
             int useless = 0;
-            int steps = 0;
+            
             bool bad_case;
             int f = -1;
             // Check determinant equals 1
             //std::cout<<"Before \n"<< determinant(random, depth)<<std::endl;
             while(m>=mx && useless<= depth*depth){
-                    steps+=1;
+                    
                     bad_case=0;
                     for(int i = 0; i < depth; i++){
                         if (i==x) continue;
@@ -649,6 +649,44 @@ bool is_identity(std::vector < std::vector<int> > matrix){
         return true;
 }
 /*
+check if a matrix is the identity matrix
+*/
+bool is_lower(std::vector < std::vector<int> > matrix){
+    for(int l = 0; l<matrix.size(); l++){
+            for(int c = 0; c<matrix.size(); c++){
+                            
+                                if(l<c && matrix.at(l).at(c)!=0){
+                                    return false;
+                                }else{
+                                    if(l==c && matrix.at(l).at(c)!=1){
+                                    return false;
+                                    }
+                                }
+                            
+            }
+        }
+        return true;
+}
+/*
+check if a matrix is the identity matrix
+*/
+bool is_upper(std::vector < std::vector<int> > matrix){
+    for(int l = 0; l<matrix.size(); l++){
+            for(int c = 0; c<matrix.size(); c++){
+                            
+                                if(l>c && matrix.at(l).at(c)!=0){
+                                    return false;
+                                }else{
+                                    if(l==c && matrix.at(l).at(c)!=1){
+                                    return false;
+                                    }
+                                }
+                            
+            }
+        }
+        return true;
+}
+/*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
   std::vector < std::vector<int> >  get_neighbor_matrix_random_element(std::vector < std::vector<int> >matrix ,int depth)
@@ -662,17 +700,17 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             }
         }
        
-    int mx = 1;
+    
     int m = 0;
     int x =-1,y=-1;
     
     
     int mm=-8;
     int useless = 0;
-    int steps = 0;
+    
     bool bad_case=0;
     int f = -1;
-    bool found_elgibile = false;
+    
     while(useless<= depth*depth){
             x = rand()%depth;
             y = rand()%depth;
@@ -724,15 +762,10 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             }
         }
        
-    int mx = 1;
+    
     int m = 0;
     int x =-1,y=-1;
-    for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                        std::cout<<result.at(i).at(j);
-                }
-                std::cout<<std::endl;
-    }
+    
     for(int i = 0; i < depth; i++){
                 for(int j = 0; j< depth; j++){
                     if(std::abs(m) < std::abs(result.at(i).at(j)))
@@ -748,12 +781,12 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
     //std::cout<<"biggest elemnt in the matrix is: "<<m<<std::endl;
     int mm=-8;
     int useless = 0;
-    int steps = 0;
+    
     bool bad_case=0;
     int f = -1;
     
     while(useless<= depth*depth){
-            steps+=1;
+            
             bad_case=0;
             for(int i = 0; i < depth; i++){
                 if (i==x) continue;
@@ -789,13 +822,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
                     }
                 }
             }
-            //std::cout << "new X: "<<new_x<<"new y: "<<new_y<<"mm:"<<mm<<std::endl;
-            for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                        std::cout<<result.at(i).at(j);
-                }
-                std::cout<<std::endl;
-    }
+            
             if(!(x== new_x && y==new_y && m==mm)){return result;}else{return get_neighbor_matrix_random_element(matrix, depth);} 
             m=mm;
             x = new_x;
@@ -843,7 +870,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
         }
        
     int y = rand()%(depth-1)+1;
-    int x = rand()%x;
+    int x = rand()%y;
     int m=1;
     if(rand()%2!=0) m=-1;
     result.at(x).at(y)= result.at(x).at(y) - m; 
@@ -861,7 +888,7 @@ std::vector < std::vector<int> >  get_random_matrix(int depth)
 
         //generate a lower traiangular matrix
         int l, c;
-        int choice = rand() %100;
+        
         std::vector <  std::vector<int> >  randomL(depth);
         for(l = 0; l<depth; l++){
             randomL.at(l)= std::vector<int>(depth);
@@ -871,6 +898,138 @@ std::vector < std::vector<int> >  get_random_matrix(int depth)
         }
         if(determinant(randomL, depth)==1) continue;
         return randomL;
+        /*
+        randomU.at(0)= std::vector<int>(depth);randomU.at(0).at(0)=1;randomU.at(0).at(1)=0;randomU.at(0).at(2)=0;
+        randomU.at(1)= std::vector<int>(depth);randomU.at(1).at(0)=-6;randomU.at(1).at(1)=1;randomU.at(1).at(2)=0;
+        randomU.at(2)= std::vector<int>(depth);randomU.at(2).at(0)=5;randomU.at(2).at(1)=-5;randomU.at(2).at(2)=1;
+        return randomU;
+        */
+    }
+    return random;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> > get_random_matrix_upper(int depth)
+{
+    int max_depth = 6;
+    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
+
+    bool valid = false;
+    std::vector <  std::vector<int> >  randomL(depth);
+    while (!valid)
+    {   
+
+        //generate a lower traiangular matrix
+        int l, c;
+        
+        for(l = 0; l<depth; l++){
+            randomL.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                            if (l<c){
+                                randomL.at(l).at(c) = (rand() %14) - 7;
+                            }else{
+                                if(l>c){
+                                    randomL.at(l).at(c) = 0;
+                                }else{
+                                    randomL.at(l).at(c)=1;
+                                }
+                            }
+            }
+        }
+
+        if(!is_identity(randomL))  return randomL;
+        continue;
+    }
+    
+    return randomL;
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> > get_random_matrix_lower(int depth)
+{
+    
+    bool valid = false;
+    std::vector <  std::vector<int> >  randomL(depth);
+    while (!valid)
+    {   
+        //generate a lower traiangular matrix
+        int l, c;
+        
+        for(l = 0; l<depth; l++){
+            randomL.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                            if (l>c){
+                                randomL.at(l).at(c) = (rand() %14) - 7;
+                            }else{
+                                if(l<c){
+                                    randomL.at(l).at(c) = 0;
+                                }else{
+                                    randomL.at(l).at(c)=1;
+                                }
+                            }
+            }
+        }
+
+        if(!is_identity(randomL))  return randomL;
+        continue;
+    }
+   return randomL;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> > get_random_matrix_non_triang(int depth)
+{
+    int max_depth = 6;
+    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
+    std::vector <  std::vector<int> >  random(depth);
+    bool valid = false;
+    while (!valid)
+    {   
+
+        //generate a lower traiangular matrix
+        int l, c;
+        int choice = rand() %100;
+        std::vector <  std::vector<int> >  randomL(depth);
+        for(l = 0; l<depth; l++){
+            randomL.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                            if (l>c){
+                                randomL.at(l).at(c) = (rand() %14) - 7;
+                            }else{
+                                if(l<c){
+                                    randomL.at(l).at(c) = 0;
+                                }else{
+                                    randomL.at(l).at(c)=1;
+                                }
+                            }
+            }
+        }
+
+        
+        ////generate an upper traiangular matrix
+        std::vector <  std::vector<int> >  randomU(depth);
+        for(l = 0; l<depth; l++){
+            randomU.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                        if (l<c){
+                            randomU.at(l).at(c) = (rand() % 14) - 7;
+                        }else{
+                            if(l>c){
+                                    randomU.at(l).at(c) = 0;
+                                }else{
+                                    randomU.at(l).at(c)=1;
+                                }
+                        }
+            }
+        }
+        randomU = multiply(randomL,randomU);
+        if(choice>5 && !is_identity(randomU))return randomU;
+        if(!is_identity(randomU)) continue;
         /*
         randomU.at(0)= std::vector<int>(depth);randomU.at(0).at(0)=1;randomU.at(0).at(1)=0;randomU.at(0).at(2)=0;
         randomU.at(1)= std::vector<int>(depth);randomU.at(1).at(0)=-6;randomU.at(1).at(1)=1;randomU.at(1).at(2)=0;
@@ -1110,7 +1269,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
         std::vector<int>p1;
         isl_ast_expr * init_expr;
         isl_ast_expr * cond_expr;
-        isl_ast_expr * iter_expr;
+        //isl_ast_expr * iter_expr;
         int stop = 0;
 
         ast.fct->gen_isl_ast();
@@ -1123,7 +1282,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             {
                 init_expr=isl_ast_node_for_get_init(ast_i); //Lower bound
                 cond_expr=isl_ast_node_for_get_cond(ast_i); //Upper bound
-                iter_expr=isl_ast_node_for_get_iterator(ast_i); //Get the ID name
+                //iter_expr=isl_ast_node_for_get_iterator(ast_i); //Get the ID name
 
                 p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_mat,true)));
                 p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_mat,true)));
@@ -1157,7 +1316,7 @@ std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_
         return std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> (constraint_mat,constraint_mat_with_bounds);
 }
 
-void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
+void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout, int method)
 {
     std::default_random_engine rand_generator;
 
@@ -1166,9 +1325,9 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     std::vector<syntax_tree*> to_be_explored;
 
     // Look for an optimization that can be applied
-    int nb_optims_tried = 0;
+    
     int nb_explored_optims = ast.nb_explored_optims;
-    auto start = std::chrono::system_clock::now();
+    
     //Generate n matrice asts to be explored
     //To change the number of matrices being explored go to: generate_schedules then the MATRIX case and change the length of the loop
     optimization_type optim_type = optimization_type::MATRIX;
@@ -1226,8 +1385,43 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         
         //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
+       
+       
         
-        child->new_optims.back().matrix = child->new_optims.back().matrix = get_random_matrix( shape);
+       if(nb_matrices==0){
+           switch (method)
+           {
+           case 0:
+               child->new_optims.back().matrix = get_random_matrix_lower( shape);
+               break;
+           case 1:
+               child->new_optims.back().matrix = get_random_matrix_upper( shape);
+               break;
+           case 2:
+               child->new_optims.back().matrix = get_random_matrix_non_triang( shape);
+               break;
+           
+           default:
+               break;
+           }
+       }else{
+           switch (method)
+           {
+           case 0:
+               child->new_optims.back().matrix = get_neighbor_matrix_random_element_diag_lower(matrices.at(nb_matrices-1), shape);
+               break;
+           case 1:
+               child->new_optims.back().matrix = get_neighbor_matrix_random_element_diag_upper( matrices.at(nb_matrices-1), shape);
+               break;
+           case 2:
+               child->new_optims.back().matrix = get_neighbor_matrix(matrices.at(nb_matrices-1), shape);
+               break;
+           
+           default:
+               break;
+           }
+       }
+       
         
 
         
@@ -1288,8 +1482,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                     cont = false;
                     std::vector<float> measurements;
                     
-                    pid_t pid, ppid;
-                    ppid = getpid();
+                    pid_t pid;
+                    
                     pid = fork();
 
                     if (pid == -1) {
@@ -1412,6 +1606,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                     }
                    else{
                         illegal=true;
+                        exec_eval->fct->reset_schedules();
                         if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                             // print deleted Ast
                             child->print_previous_optims();
@@ -1535,7 +1730,7 @@ void mcts::search_save(syntax_tree& ast, std::vector<std::string> *schedules_ann
     std::cerr<< "mcts::search_save not yet implemented" << std::endl;
     exit(1);
 }
-void mcts::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
+void mcts::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout, int method)
 {
     std::cerr<< "mcts::search_save not yet implemented" << std::endl;
     exit(1);
@@ -1570,7 +1765,7 @@ void beam_search_topk::search_save(syntax_tree& ast, std::vector<std::string> *s
     std::cerr<< "beam_search_topk::search_save not yet implemented" << std::endl;
     exit(1);
 }
-void beam_search_topk::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
+void beam_search_topk::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout, int method)
 {
     std::cerr<< "beam_search_topk::search_save not yet implemented" << std::endl;
     exit(1);
