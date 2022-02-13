@@ -1129,14 +1129,6 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     bool first_time_illegal = true;
     syntax_tree *child = *iterator;
     
-    std::vector <  std::vector<int> >  randomU(3);
-    randomU.at(0)= std::vector<int>(3);randomU.at(0).at(0)=1;randomU.at(0).at(1)=2;randomU.at(0).at(2)=5;
-    randomU.at(1)= std::vector<int>(3);randomU.at(1).at(0)=6;randomU.at(1).at(1)=13;randomU.at(1).at(2)=28;
-    randomU.at(2)= std::vector<int>(3);randomU.at(2).at(0)=6;randomU.at(2).at(1)=9;randomU.at(2).at(2)=37;
-    child->new_optims.back().matrix = randomU;
-    matrices.push_back(child->new_optims.back().matrix);
-    nb_matrices++;
-    
     while (iterator != children.end())
     {
 
@@ -1159,7 +1151,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
         
-        child->new_optims.back().matrix = child->new_optims.back().matrix = get_neighbor_matrix_random_element(matrices.at(nb_matrices-1), shape);
+        child->new_optims.back().matrix = child->new_optims.back().matrix = get_random_matrix( shape);
         
 
         
@@ -1167,30 +1159,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         child->constraint_matrix = constraint_mats.second;
         child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
         child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
-        /*std::cout<<"O Bound\n";
-        for (int i = 0; i <  child->bounds_matrix.size(); i++) {
-        for (int j = 0; j <  child->bounds_matrix[i].size(); j++)
-             std::cout << child->bounds_matrix[i][j] << " ";
-         std::cout <<  std::endl;
-        }
-        std::cout<<"T Bound\n";
-        for (int i = 0; i <  child->transformed_bounds_matrix.size(); i++) {
-        for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
-             std::cout << child->transformed_bounds_matrix[i][j] << " ";
-         std::cout <<  std::endl;
-        }
-        std::cout<<"O constraint\n";
-        for (int i = 0; i <  child->constraint_matrix.size(); i++) {
-        for (int j = 0; j <  child->constraint_matrix[i].size(); j++)
-             std::cout << child->constraint_matrix[i][j] << " ";
-         std::cout <<  std::endl;
-        }
-        std::cout<<"T constraint\n";
-        for (int i = 0; i <  child->transformed_constraint_matrix.size(); i++) {
-        for (int j = 0; j < child->transformed_constraint_matrix[i].size(); j++)
-             std::cout << child->transformed_constraint_matrix[i][j] << " ";
-         std::cout <<  std::endl;
-        }*/
+        
         if(check_if_repeated(child->new_optims.back().matrix, matrices)) continue;
         
 
