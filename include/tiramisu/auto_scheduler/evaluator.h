@@ -89,7 +89,7 @@ public:
     std::vector<float> get_measurements(syntax_tree &ast,  bool exit_on_timeout = false, float timeout = 0);
 
     std::vector<float> get_measurements_matrix(syntax_tree &ast,  bool exit_on_timeout = false, float timeout = 0);
-    std::vector<float> get_measurements_matrix_non_one(syntax_tree &ast,  bool exit_on_timeout = false, float timeout = 0);
+
 };
 
 /**
