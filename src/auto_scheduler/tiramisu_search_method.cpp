@@ -427,7 +427,7 @@ bool check_if_repeated( std::vector < std::vector<int> >  matrix,std::vector < s
      
     return false;
 }
-std::vector < std::vector < std::vector<int> > > beam_search::get_random_matrcies(int nb_out_matrcies, int depth)
+std::vector < std::vector < std::vector<int> > > get_random_matrcies(int nb_out_matrcies, int depth)
 {
     std::vector <std::vector <  std::vector<int> >>  result(nb_out_matrcies);
     int nb_valid_matrices = 0;
@@ -808,7 +808,83 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
 /*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
-  std::vector < std::vector<int> >  beam_search::get_random_matrix(int depth)
+  std::vector < std::vector<int> >  get_neighbor_matrix_random_element_diag_lower(std::vector < std::vector<int> >matrix ,int depth)
+{
+    //std::cout<<"stratred random"<<std::endl;
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int x = rand()%(depth-1)+1;
+    int y = rand()%x;
+    
+    int m=1;
+    if(rand()%2!=0) m=-1;
+    result.at(x).at(y)= result.at(x).at(y) - m; 
+    return result;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> >  get_neighbor_matrix_random_element_diag_upper(std::vector < std::vector<int> >matrix ,int depth)
+{
+    //std::cout<<"stratred random"<<std::endl;
+    std::vector < std::vector<int> > result(depth);
+    for(int l = 0; l<depth; l++){
+            result.at(l) = std::vector<int>(depth);
+            for(int c = 0; c<depth; c++){
+                            result.at(l).at(c) = matrix.at(l).at(c);
+            }
+        }
+       
+    int y = rand()%(depth-1)+1;
+    int x = rand()%x;
+    int m=1;
+    if(rand()%2!=0) m=-1;
+    result.at(x).at(y)= result.at(x).at(y) - m; 
+    return result;
+    
+}
+std::vector < std::vector<int> >  get_random_matrix(int depth)
+{
+    int max_depth = 6;
+    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
+    std::vector <  std::vector<int> >  random(depth);
+    bool valid = false;
+    while (!valid)
+    {   
+
+        //generate a lower traiangular matrix
+        int l, c;
+        int choice = rand() %100;
+        std::vector <  std::vector<int> >  randomL(depth);
+        for(l = 0; l<depth; l++){
+            randomL.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                randomL.at(l).at(c) = (rand() %20) - 10;          
+            }
+        }
+        if(determinant(randomL, depth)==1) continue;
+        return randomL;
+        /*
+        randomU.at(0)= std::vector<int>(depth);randomU.at(0).at(0)=1;randomU.at(0).at(1)=0;randomU.at(0).at(2)=0;
+        randomU.at(1)= std::vector<int>(depth);randomU.at(1).at(0)=-6;randomU.at(1).at(1)=1;randomU.at(1).at(2)=0;
+        randomU.at(2)= std::vector<int>(depth);randomU.at(2).at(0)=5;randomU.at(2).at(1)=-5;randomU.at(2).at(2)=1;
+        return randomU;
+        */
+    }
+    return random;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  std::vector < std::vector<int> > get_random_matrix_det_1(int depth)
 {
     int max_depth = 6;
     if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
