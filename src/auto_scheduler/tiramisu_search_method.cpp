@@ -1043,6 +1043,43 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
 /*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
+  std::vector < std::vector<int> > get_identity_matrix(int depth)
+{
+    int max_depth = 6;
+    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
+    std::vector <  std::vector<int> >  random(depth);
+    bool valid = false;
+    while (!valid)
+    {   
+
+        //generate a lower traiangular matrix
+        int l, c;
+        int choice = rand() %100;
+        std::vector <  std::vector<int> >  randomL(depth);
+        for(l = 0; l<depth; l++){
+            randomL.at(l)= std::vector<int>(depth);
+            for(c = 0; c<depth; c++){
+                            if (l>c){
+                                randomL.at(l).at(c) = 0;
+                            }else{
+                                if(l<c){
+                                    randomL.at(l).at(c) = 0;
+                                }else{
+                                    randomL.at(l).at(c)=1;
+                                }
+                            }
+            }
+        }
+
+        return randomL;
+        
+    }
+    return random;
+    
+}
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
   std::vector < std::vector<int> > get_random_matrix_det_1(int depth)
 {
     int max_depth = 6;
@@ -1400,6 +1437,12 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
            case 2:
                child->new_optims.back().matrix = get_random_matrix_non_triang( shape);
                break;
+            case 3:
+               child->new_optims.back().matrix = get_identity_matrix( shape);
+               break;
+            case 4:
+               child->new_optims.back().matrix = get_identity_matrix( shape);
+               break;
            
            default:
                break;
@@ -1416,7 +1459,12 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
            case 2:
                child->new_optims.back().matrix = get_neighbor_matrix(matrices.at(nb_matrices-1), shape);
                break;
-           
+           case 3:
+               child->new_optims.back().matrix = get_neighbor_matrix_random_element_diag_lower(matrices.at(nb_matrices-1), shape);
+               break;
+            case 4:
+               child->new_optims.back().matrix = get_neighbor_matrix_random_element_diag_upper(matrices.at(nb_matrices-1), shape);
+               break;   
            default:
                break;
            }

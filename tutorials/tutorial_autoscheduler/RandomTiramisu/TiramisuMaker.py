@@ -241,6 +241,8 @@ class Program:
         autoscheduler_source += 'as.sample_search_space_random_matrix("./' + self.name + '_explored_schedules_lower.json", true, 0);\n\t'
         autoscheduler_source += 'as.sample_search_space_random_matrix("./' + self.name + '_explored_schedules_upper.json", true, 1);\n\t'
         autoscheduler_source += 'as.sample_search_space_random_matrix("./' + self.name + '_explored_schedules_non_trang.json", true, 2);\n\t'
+        autoscheduler_source += 'as.sample_search_space_random_matrix("./' + self.name + '_explored_schedules_identity_lower.json", true, 3);\n\t'
+        autoscheduler_source += 'as.sample_search_space_random_matrix("./' + self.name + '_explored_schedules_identity_upper.json", true, 4);\n\t'
         autoscheduler_source += 'delete scheds_gen;\n\t'
         autoscheduler_source += 'delete exec_eval;\n\t'
         autoscheduler_source += 'delete bs;\n\t'

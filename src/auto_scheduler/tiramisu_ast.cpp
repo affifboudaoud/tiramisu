@@ -1768,7 +1768,7 @@ state_computation::state_computation(state_computation * reference)
             else{stop=1;} 
         }
         
-        std::cout<<"Incrment is :"<<inc_is_one<<"\n";
+        //std::cout<<"Incrment is :"<<inc_is_one<<"\n";
 
         return (inc_is_one);
     }

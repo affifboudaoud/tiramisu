@@ -33,6 +33,8 @@ int main(int argc, char **argv){
 	as.sample_search_space_random_matrix("./function750481_explored_schedules_lower.json", true, 0);
 	as.sample_search_space_random_matrix("./function750481_explored_schedules_upper.json", true, 1);
 	as.sample_search_space_random_matrix("./function750481_explored_schedules_non_trang.json", true, 2);
+	as.sample_search_space_random_matrix("./function750481_explored_schedules_identity_lower.json", true, 3);
+	as.sample_search_space_random_matrix("./function750481_explored_schedules_identity_upper.json", true, 4);
 	delete scheds_gen;
 	delete exec_eval;
 	delete bs;
