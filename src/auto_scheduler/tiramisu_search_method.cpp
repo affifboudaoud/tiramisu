@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #define TIME_LIMIT 1000
+std::vector <std::vector < std::vector<int> >> matrices; 
 struct TimeLimitException : public std::exception
     {
         const char * what () const throw ()
@@ -867,7 +868,17 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
     return random;
     
 }
-
+/*
+Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
+*/
+  void  get_matrices(int depth)
+{
+    // add interchange matrices
+    
+    // add reversal matriecs
+    
+    // add skewing matrices
+}
 
         // Gettig the values of the isl AST
     int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map )
@@ -1151,7 +1162,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
         
-        child->new_optims.back().matrix = child->new_optims.back().matrix = get_random_matrix( shape);
+        child->new_optims.back().matrix = get_random_matrix(shape);
         
 
         
@@ -1350,20 +1361,23 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     });
 
     // shuffle the children so that they are selected a random
-//    std::shuffle(std::begin(children), std::end(children), rand_generator);
+    std::shuffle(std::begin(children), std::end(children), rand_generator);
 
     // keep the top 'beam_size' children and delete the rest
-    //for (int i = beam_size; i < to_be_explored.size(); ++i)
-       //delete to_be_explored[i];
+    for (int i = beam_size; i < to_be_explored.size(); ++i)
+       delete to_be_explored[i];
 
-    //to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
+    to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
 
     // Search recursively on the best children
     for (syntax_tree *child : to_be_explored)
     {
-        child->search_depth = ast.search_depth ;
-        
-        search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
+        child->search_depth = ast.search_depth + 1;
+        if (ast.search_depth<MAX_MAT_DEPTH){
+            search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
+        }else{
+            search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
+        }
     }
 }
 
