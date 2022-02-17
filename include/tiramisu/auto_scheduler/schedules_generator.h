@@ -56,6 +56,7 @@ protected:
      * The number of diffrent skewing proposed, skewing versions that enable inner parallelism in our case.
     */
     int skewing_inner_parallelism_number = 3;
+    
 
 
 public:
@@ -66,12 +67,13 @@ public:
         : tiling_factors_list(tiling_factors_list), unrolling_factors_list(unrolling_factors_list), skewing_factors_list(skewing_factors_list) {}
 
     virtual ~schedules_generator() {}
-
+    std::vector <std::vector < std::vector<int> >> matrices;
     /**
      * Given an AST, and an optimization to apply, 
      * generate new ASTs by applying the given optimization.
      */
     virtual std::vector<syntax_tree*> generate_schedules(syntax_tree const& ast, optimization_type optim) =0;
+    virtual std::vector <std::vector < std::vector<int> >> get_matrices(syntax_tree& ast,int depth)= 0;
 };
 
 /**
@@ -106,6 +108,7 @@ protected:
      * apply unrolling recursively on children of the given node.
      */
     void generate_unrollings(ast_node *node, std::vector<syntax_tree*>& states, syntax_tree const& ast);
+    
 
 public:
     exhaustive_generator(std::vector<int> const& tiling_factors_list = TILING_FACTORS_DEFAULT_LIST,
@@ -114,6 +117,8 @@ public:
         : schedules_generator(tiling_factors_list, unrolling_factors_list) {}
 
     virtual std::vector<syntax_tree*> generate_schedules(syntax_tree const& ast, optimization_type optim);
+    virtual std::vector <std::vector < std::vector<int> >> get_matrices(syntax_tree& ast,int depth);
+    std::vector <std::vector < std::vector<int> >> matrices;
 };
 
 /**
@@ -130,6 +135,7 @@ protected:
      * The maximum number of iterators on which to apply the optimizations.
      */
     int max_nb_iterators;
+    
 
 public:
     ml_model_schedules_generator(int max_nb_iterators = DEFAULT_MAX_NB_ITERATORS,
@@ -140,6 +146,8 @@ public:
           max_nb_iterators(max_nb_iterators) {}
         
     virtual std::vector<syntax_tree*> generate_schedules(syntax_tree const& ast, optimization_type optim);
+    virtual std::vector <std::vector < std::vector<int> >> get_matrices(syntax_tree& ast,int depth);
+    std::vector <std::vector < std::vector<int> >> matrices;
 };
 
 }

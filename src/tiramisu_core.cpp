@@ -1370,7 +1370,7 @@ namespace tiramisu
         {
             this->get_update(0).tag_unroll_level(L0, v);
         }
-       std::cout<<"started Aligning"<<std::endl; 
+       
         this->get_function()->align_schedules();
         
 
@@ -5898,7 +5898,6 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
        
         this->gen_time_space_domain();
         isl_set *set = this->get_trimmed_time_processor_domain();
-         std::cout<<"Finishied naming****************"<<std::endl; 
         assert(set != NULL);
 
         DEBUG(10, tiramisu::str_dump(std::string("Getting the ") +
@@ -5950,7 +5949,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
 
         DEBUG(10, tiramisu::str_dump("The maximal AST depth is : " + std::to_string(depth)));
         DEBUG_INDENT(-4);
-        std::cout<<"Finishied naming 1****************"<<std::endl; 
+         
         return depth;
     }
 
@@ -6063,19 +6062,19 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
 
         // Compute the depth before any scheduling.
         int original_depth = this->compute_maximal_AST_depth();
-        std::cout<<"finised AST depth\n";
+       
         DEBUG(3, tiramisu::str_dump("Computing upper bound at loop level " + std::to_string(L0)));
         
         tiramisu::expr loop_upper_bound =
             tiramisu::expr(o_cast, global::get_loop_iterator_data_type(),
                            tiramisu::utility::get_bound(this->get_trimmed_time_processor_domain(), L0, true));
-//std::cout<<"started  seprate 1\n";
+
         DEBUG(3, tiramisu::str_dump("Computing lower bound at loop level " + std::to_string(L0)));
         
         tiramisu::expr loop_lower_bound =
             tiramisu::expr(o_cast, global::get_loop_iterator_data_type(),
                            tiramisu::utility::get_bound(this->get_trimmed_time_processor_domain(), L0, false));
-//std::cout<<"started  seprate 2\n";
+
         std::string lower_without_cast = loop_lower_bound.to_str();
         while (lower_without_cast.find("cast") != std::string::npos) // while there is a "cast" in the expression
         {
@@ -6089,7 +6088,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         tiramisu::expr loop_bound = loop_upper_bound - loop_lower_bound +
                                     tiramisu::expr(o_cast, global::get_loop_iterator_data_type(), tiramisu::expr((int32_t)1));
         loop_bound = loop_bound.simplify();
-//std::cout<<"started  seprate 3\n";
+
         DEBUG(3, tiramisu::str_dump("Loop bound for the loop to be separated and split: "); loop_bound.dump(false));
         /*
      * Separate this computation. That is, create two identical computations
@@ -6106,12 +6105,12 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
      * (the full or the separated domains) and schedule one after the other.
      */
         this->separate(L0, loop_bound, v, loop_lower_bound);
-        //std::cout<<"finised seprate\n";
+        
         // Make a copy of the schedule before splitting so that we revert the
         // schedule if splitting did not have any effect (i.e., did not happen).
         //std::cout<<"Schdule : "<<isl_map_to_str(this->get_schedule())<<"\n";
         isl_map *sc = isl_map_copy(this->get_schedule());
-        std::cout<<"Schdule after copy : "<<isl_map_to_str(sc)<<"\n";
+        
         /**
      * Split the full computation since the full computation will be vectorized.
      */
@@ -6121,9 +6120,9 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         this->get_update(0).split_with_lower_bound(L0, v, lower_without_cast);
 
         // Compute the depth after scheduling.
-         std::cout<<"started AST depth é\n";
+         
         int depth = this->compute_maximal_AST_depth();
-         std::cout<<"finised AST depth 2\n";
+         
         bool split_happened = false;
         if (depth == original_depth)
         {

@@ -228,7 +228,286 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
     for (ast_node *child : node->children)
         generate_unrollings(child, states, ast);
 }
+ std::vector <std::vector < std::vector<int> >>  exhaustive_generator::get_matrices(syntax_tree& ast,int depth)
+{
+    std::vector<ast_node*> shared_nodes;
+    std::vector<tiramisu::computation*> involved_computations;
+    // add interchange matrices
+    bool interchange = true;
+    ast.get_shared_nodes_from_outermost(shared_nodes);
 
+            if(shared_nodes.size() > 0)
+            {
+                shared_nodes[0]->get_all_computations(involved_computations);
+            }
+            else
+            {
+                interchange = false;
+            }
+
+            if (interchange){
+                // To apply interchange, we pick all combinations of two iterators 
+                // in the shared loop levels.
+                for (int i = 0; i < shared_nodes.size(); ++i)
+                {
+                    for (int j = i + 1; j < shared_nodes.size(); ++j)
+                    {
+                        std::vector <  std::vector<int> >  matrix(depth);
+                        for(int l = 0; l<matrix.size(); l++){
+                            matrix.at(l)= std::vector<int>(depth);
+                            for(int c = 0; c<matrix.size(); c++){
+                                            if (l!=c ){
+                                                matrix.at(l).at(c) = 0;
+                                            }else{
+                                                matrix.at(l).at(c) = 1;
+                                            }
+                            }
+                        }
+                            
+                        int first_loop = shared_nodes[i]->depth;
+                        int second_loop = shared_nodes[j]->depth;
+                        matrix.at(first_loop).at(second_loop) = 1;
+                        matrix.at(second_loop).at(first_loop) = 1;
+                        matrix.at(second_loop).at(second_loop) = 0;
+                        matrix.at(first_loop).at(first_loop) = 0;
+                        matrices.push_back(matrix);
+                    }
+                    
+                }
+            } 
+    
+    // add reversal matriecs
+    for(int i=0;i<depth;i++){
+        std::vector <  std::vector<int> >  matrix(depth);
+        for(int l = 0; l<matrix.size(); l++){
+            matrix.at(l)= std::vector<int>(depth);
+            for(int c = 0; c<matrix.size(); c++){
+                            if (l!=c ){
+                                matrix.at(l).at(c) = 0;
+                            }else{
+                                matrix.at(l).at(c) = 1;
+                            }
+            }
+        }
+        matrix.at(i).at(i) = -1; 
+        matrices.push_back(matrix);
+    }
+    
+    return this->matrices;
+}
+  std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
+{
+    std::vector<ast_node*> shared_nodes;
+    std::vector<tiramisu::computation*> involved_computations;
+    // add interchange matrices
+    bool interchange = true;
+    ast.get_shared_nodes_from_outermost(shared_nodes);
+
+            if(shared_nodes.size() > 0)
+            {
+                shared_nodes[0]->get_all_computations(involved_computations);
+            }
+            else
+            {
+                interchange = false;
+            }
+            
+            if (interchange){
+                // To apply interchange, we pick all combinations of two iterators 
+                // in the shared loop levels.
+                for (int i = 0; i < shared_nodes.size(); ++i)
+                {
+                    for (int j = i + 1; j < shared_nodes.size(); ++j)
+                    {
+                        std::vector <  std::vector<int> >  matrix(depth);
+                        for(int l = 0; l<matrix.size(); l++){
+                            matrix.at(l)= std::vector<int>(depth);
+                            for(int c = 0; c<matrix.size(); c++){
+                                            if (l!=c ){
+                                                matrix.at(l).at(c) = 0;
+                                            }else{
+                                                matrix.at(l).at(c) = 1;
+                                            }
+                            }
+                        }
+                            
+                        int first_loop = shared_nodes[i]->depth;
+                        int second_loop = shared_nodes[j]->depth;
+                        matrix.at(first_loop).at(second_loop) = 1;
+                        matrix.at(second_loop).at(first_loop) = 1;
+                        matrix.at(second_loop).at(second_loop) = 0;
+                        matrix.at(first_loop).at(first_loop) = 0;
+                        this->matrices.push_back(matrix);
+                    }
+                    
+                }
+            } 
+    
+    // add reversal matriecs
+    for(int i=0;i<depth;i++){
+        std::vector <  std::vector<int> >  matrix(depth);
+        for(int l = 0; l<matrix.size(); l++){
+            matrix.at(l)= std::vector<int>(depth);
+            for(int c = 0; c<matrix.size(); c++){
+                            if (l!=c ){
+                                matrix.at(l).at(c) = 0;
+                            }else{
+                                matrix.at(l).at(c) = 1;
+                            }
+            }
+        }
+        matrix.at(i).at(i) = -1; 
+        this->matrices.push_back(matrix);
+    }
+    
+    // add skewing matrices
+            shared_nodes.clear();
+            involved_computations.clear();
+            bool skew = true;
+            ast.stage_isl_states();
+            //for shared nodes the list of involved computations is always the same.
+            // that's only the case when we compute test shared loop levels only (not always the case). 
+            ast.get_shared_nodes_from_outermost(shared_nodes);
+
+            if(shared_nodes.size() > 1)
+            {
+                shared_nodes[0]->get_all_computations(involved_computations);
+                shared_nodes.pop_back();//removes 2nd loop level, first is enough 
+            }
+            else
+            {
+                skew = false;
+            }
+            
+            if(skew){
+                for (ast_node* commun_node: shared_nodes)
+                {
+                    std::vector<std::string> loop_names = involved_computations[0]->get_loop_level_names();
+                
+                    std::string loop_name = loop_names[commun_node->depth];
+                    std::string loop_name_inner = loop_names[commun_node->depth+1];
+                    
+                    auto result_skewing = ast.fct->skewing_local_solver(involved_computations,
+                            var(loop_name),var(loop_name_inner),
+                            skewing_inner_parallelism_number
+                            );
+
+                    if(std::get<1>(result_skewing).size() > 0) // inner parallelism has solutions
+                    {
+                        ast.recover_isl_states();
+                        for(auto& param:std::get<1>(result_skewing))
+                        {
+                                // Copy the AST and add unrolling to the list of optimizations
+                            syntax_tree* new_ast = new syntax_tree();
+                            ast_node *new_node = ast.copy_and_return_node(*new_ast, commun_node);
+                            int l0 = new_node->depth;
+                            int l1 = new_node->depth+1;
+                            int l0_fact = std::get<0>(param);
+                            int l1_fact = std::get<1>(param);
+
+                           
+                            std::vector <  std::vector<int> >  matrix(depth);
+                            for(int l = 0; l<matrix.size(); l++){
+                                matrix.at(l)= std::vector<int>(depth);
+                                for(int c = 0; c<matrix.size(); c++){
+                                                if (l!=c ){
+                                                    matrix.at(l).at(c) = 0;
+                                                }else{
+                                                    matrix.at(l).at(c) = 1;
+                                                }
+                                }
+                            }
+                            matrix.at(l0).at(l1) = l1_fact;
+                            matrix.at(l0).at(l0) = l0_fact;
+                            this->matrices.push_back(matrix);
+                            
+                        }
+                        ast.stage_isl_states();
+                    }
+
+                    if(std::get<0>(result_skewing).size() > 0) // outer parallelism has solutions
+                    {
+                        ast.recover_isl_states();
+                        for(auto& param:std::get<0>(result_skewing))
+                        {
+                            // Copy the AST and add unrolling to the list of optimizations
+                            syntax_tree* new_ast = new syntax_tree();
+                            ast_node *new_node = ast.copy_and_return_node(*new_ast, commun_node);
+
+                            int l0 = new_node->depth;
+                            int l1 = new_node->depth+1;
+                            int l0_fact = std::get<0>(param);
+                            int l1_fact = std::get<1>(param);
+
+                            
+                            std::vector <  std::vector<int> >  matrix(depth);
+                            for(int l = 0; l<matrix.size(); l++){
+                                matrix.at(l)= std::vector<int>(depth);
+                                for(int c = 0; c<matrix.size(); c++){
+                                                if (l!=c ){
+                                                    matrix.at(l).at(c) = 0;
+                                                }else{
+                                                    matrix.at(l).at(c) = 1;
+                                                }
+                                }
+                            }
+                            matrix.at(l0).at(l1) = l1_fact;
+                            matrix.at(l0).at(l0) = l0_fact;
+                            this->matrices.push_back(matrix);
+                        }
+                        ast.stage_isl_states();
+                    }
+
+                    if(std::get<2>(result_skewing).size() > 0) // locality has solutions
+                    {
+                        ast.recover_isl_states();
+                        for(auto& param:std::get<2>(result_skewing))
+                        {
+                            // Copy the AST and add unrolling to the list of optimizations
+                            syntax_tree* new_ast = new syntax_tree();
+                            ast_node *new_node = ast.copy_and_return_node(*new_ast, commun_node);
+
+                            optimization_info optim_info;
+                            optim_info.type = optimization_type::SKEWING;
+                            optim_info.node = new_node;
+
+                            
+                            int l0 = new_node->depth;
+                            int l1 = new_node->depth+1;
+                            int l0_fact = std::get<0>(param);
+                            int l1_fact = std::get<1>(param);
+
+                            if((optim_info.l0 > 0) && (optim_info.l1 >0))
+                            {//require loop reversal for correctness
+                                optim_info.l2_fact= -1;
+                            }
+
+                            
+                            std::vector <  std::vector<int> >  matrix(depth);
+                            for(int l = 0; l<matrix.size(); l++){
+                                matrix.at(l)= std::vector<int>(depth);
+                                for(int c = 0; c<matrix.size(); c++){
+                                                if (l!=c ){
+                                                    matrix.at(l).at(c) = 0;
+                                                }else{
+                                                    matrix.at(l).at(c) = 1;
+                                                }
+                                }
+                            }
+                            matrix.at(l0).at(l1) = l1_fact;
+                            matrix.at(l0).at(l0) = l0_fact;
+                            this->matrices.push_back(matrix);
+                        }
+                        ast.stage_isl_states();
+                    }
+
+
+                }
+            }
+
+            ast.recover_isl_states();
+        return this->matrices;
+}
 std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(syntax_tree const& ast, optimization_type optim)
 {
     // This method generates schedules applied on shared loops, so it does not
@@ -416,7 +695,7 @@ std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(synta
             {
                 //Generate 4 matrices to be explored
                 //Make sure that the number of generated matrices is under MAX_NB_MATRICES
-                for(int i=0;i<10;i++){
+                for(int i=0;i<4;i++){
                     syntax_tree* new_ast = new syntax_tree();
                     new_ast = ast.copy_ast();
                     optimization_info optim_info;

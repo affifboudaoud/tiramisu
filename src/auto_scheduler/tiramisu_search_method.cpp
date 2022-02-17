@@ -6,7 +6,7 @@
 
 #include <stdexcept>
 #define TIME_LIMIT 1000
-std::vector <std::vector < std::vector<int> >> matrices; 
+ 
 struct TimeLimitException : public std::exception
     {
         const char * what () const throw ()
@@ -215,8 +215,7 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
             std::vector<float> measurements;
             
             
-            pid_t pid, ppid;
-            ppid = getpid();
+            pid_t pid;
             pid = fork();
 
             if (pid == -1) {
@@ -511,13 +510,12 @@ std::vector < std::vector < std::vector<int> > > beam_search::get_random_matrcie
             }
             int mm=-8;
             int useless = 0;
-            int steps = 0;
+            
             bool bad_case;
             int f = -1;
             // Check determinant equals 1
             //std::cout<<"Before \n"<< determinant(random, depth)<<std::endl;
             while(m>=mx && useless<= depth*depth){
-                    steps+=1;
                     bad_case=0;
                     for(int i = 0; i < depth; i++){
                         if (i==x) continue;
@@ -663,17 +661,16 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             }
         }
        
-    int mx = 1;
+    
     int m = 0;
     int x =-1,y=-1;
     
     
     int mm=-8;
     int useless = 0;
-    int steps = 0;
+    
     bool bad_case=0;
     int f = -1;
-    bool found_elgibile = false;
     while(useless<= depth*depth){
             x = rand()%depth;
             y = rand()%depth;
@@ -725,7 +722,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             }
         }
        
-    int mx = 1;
+    
     int m = 0;
     int x =-1,y=-1;
     for(int i = 0; i < depth; i++){
@@ -749,12 +746,11 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
     //std::cout<<"biggest elemnt in the matrix is: "<<m<<std::endl;
     int mm=-8;
     int useless = 0;
-    int steps = 0;
+    
     bool bad_case=0;
     int f = -1;
     
     while(useless<= depth*depth){
-            steps+=1;
             bad_case=0;
             for(int i = 0; i < depth; i++){
                 if (i==x) continue;
@@ -868,17 +864,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
     return random;
     
 }
-/*
-Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
-*/
-  void  get_matrices(int depth)
-{
-    // add interchange matrices
-    
-    // add reversal matriecs
-    
-    // add skewing matrices
-}
+
 
         // Gettig the values of the isl AST
     int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map )
@@ -1045,7 +1031,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
         std::vector<int>p1;
         isl_ast_expr * init_expr;
         isl_ast_expr * cond_expr;
-        isl_ast_expr * iter_expr;
+        
         int stop = 0;
 
         ast.fct->gen_isl_ast();
@@ -1058,7 +1044,7 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
             {
                 init_expr=isl_ast_node_for_get_init(ast_i); //Lower bound
                 cond_expr=isl_ast_node_for_get_cond(ast_i); //Upper bound
-                iter_expr=isl_ast_node_for_get_iterator(ast_i); //Get the ID name
+                
 
                 p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_mat,true)));
                 p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_mat,true)));
@@ -1091,7 +1077,7 @@ std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_
         }
         return std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> (constraint_mat,constraint_mat_with_bounds);
 }
-
+std::vector <std::vector < std::vector<int> >> matrices;
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
     std::default_random_engine rand_generator;
@@ -1100,17 +1086,17 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     std::vector<syntax_tree*> children;
     std::vector<syntax_tree*> to_be_explored;
 
-    // Look for an optimization that can be applied
-    int nb_optims_tried = 0;
+    
     int nb_explored_optims = ast.nb_explored_optims;
-    auto start = std::chrono::system_clock::now();
+    
     //Generate n matrice asts to be explored
     //To change the number of matrices being explored go to: generate_schedules then the MATRIX case and change the length of the loop
     optimization_type optim_type = optimization_type::MATRIX;
 
     children = scheds_gen->generate_schedules(ast, optim_type);
     
-    
+    if (ast.search_depth==0) matrices=scheds_gen->get_matrices(ast, ast.get_program_depth());
+    children.resize(std::min((int)matrices.size()-1, (int)children.size()));
     // Stop if no more optimizations can be applied
     //Add the current AST to the list of children
     if (children.size() == 0)
@@ -1119,7 +1105,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // Evaluate children and sort them from smallest to highest evaluation
     // evaluate while removing illegal versions
     auto iterator = children.begin();
-    std::vector < std::vector < std::vector<int> > > matrices;
+    
 
     //std::map <std::string,std::string>* corr_map;
     std::vector<std::vector<int>> bounds_mat;
@@ -1137,9 +1123,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     int nb_matrices =0;
     int nb_steps = 0;
     bool illegal = false;
-    bool first_time_illegal = true;
-    syntax_tree *child = *iterator;
     
+    syntax_tree *child = *iterator;
     while (iterator != children.end())
     {
 
@@ -1154,30 +1139,26 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
         child->nb_explored_optims = nb_explored_optims;
         
-        int shape = child->get_program_depth();
-        //save an AST in case the matrix is illegal
-        syntax_tree* new_ast = new syntax_tree();
-        new_ast = child->copy_ast();
+        
         
         //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
         
-        child->new_optims.back().matrix = get_random_matrix(shape);
+        child->new_optims.back().matrix = matrices.at(nb_matrices);
+        nb_matrices++;
         
-
         
         child->bounds_matrix = bounds_mat;
         child->constraint_matrix = constraint_mats.second;
         child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
         child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
         
-        if(check_if_repeated(child->new_optims.back().matrix, matrices)) continue;
+       
         
 
         child->transform_ast();
 
         if (!child->ast_is_legal()) {
-            illegal=true;
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 // print deleted Ast
                 child->print_previous_optims();
@@ -1187,163 +1168,155 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 child->print_isl_states();
                 std::cout << "\n<illegal>\n";
             }
-
-            if (first_time_illegal) {
-                delete child;
-                //iterator = children.erase(iterator);
-                //if(iterator == children.end()) iterator--;
-                first_time_illegal=false;
-            }
-
-            child = new_ast;
+            delete child;
+            iterator = children.erase(iterator);
         }
         else {
-                    matrices.push_back(child->new_optims.back().matrix);
-                    nb_matrices++;
-                    ++iterator;
 
-                    first_time_illegal=true;
-                    illegal = false;
-                    if (std::atoi(read_env_var("AS_VERBOSE"))==1){
-                        child->print_previous_optims();
-                        std::cout << "\n-----------" << std::endl;
-                        child->print_new_optims();
-                        child->print_ast();
-                        child->print_isl_states();
-                        std::cout << "\n<legal>\n";
-                    }
-                    
-                    int fd[2];
-                    
-                    // create pipe descriptors
-                    pipe(fd);
-                    timeout=0;
-                    child_done=0;
-                    cont = false;
-                    std::vector<float> measurements;
-                    
-                    pid_t pid, ppid;
-                    ppid = getpid();
-                    pid = fork();
+            // print and evaluate Ast
 
-                    if (pid == -1) {
-                        perror("fork failed");
-                        exit(1);
-                    } else if (pid == 0) {
-                        measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
-                        int size =measurements.size();
-                        float ar[measurements.size()];
-                        for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
-                        close(fd[0]);
-                        write(fd[1], &size, sizeof(size));
-                        
-                        write(fd[1], &ar, sizeof(ar));
-                        
-                        close(fd[1]);
-                        _exit(1);
-                    }
+            if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                child->print_previous_optims();
+                std::cout << "\n-----------" << std::endl;
+                child->print_new_optims();
+                child->print_ast();
+                child->print_isl_states();
+                std::cout << "\n<legal>\n";
+                child->print_computations_accesses();
+            }
+            int fd[2];
+            
+            // create pipe descriptors
+	        pipe(fd);
+            timeout=0;
+            child_done=0;
+            cont = false;
+            std::vector<float> measurements;
+            
+            
+            pid_t pid;
+            pid = fork();
 
-                    // set up the signal handlers after forking so the child doesn't inherit them
-
-                    signal(SIGALRM, alarm_handler);
-                    signal(SIGCHLD, child_handler);
-                    signal(SIGUSR1,sig_usr);
-                    // install an alarm to be fired after TIME_LIMIT
-                    
-                    alarm(TIME_LIMIT);
-                    
-                    pause();
-
-                    if (timeout) {
-                        
-                            
-                        int result = waitpid(pid, NULL, WNOHANG);
-                        if (result == 0) {
-                            // child still running, so kill it
-                            
-                            
-                            // Remove all the optimizations
-                            exec_eval->fct->reset_schedules();
-                            measurements.clear();
-                            measurements.push_back(std::numeric_limits<float>::infinity());
-                            // cancel any previously set alarm 
-                            alarm(0); 
-                            kill(pid, 9);
-                            
-                            
-                        
-                            waitpid(-1,NULL,0);
-                        } else {
-                            
-                            int size = 0;
-                            close(fd[1]);
-                            read(fd[0], &size, sizeof(int));
-                            float ar[size];
-                            read(fd[0], &ar, size*sizeof(float));
-                            for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                            close(fd[0]);
-                            
-                        }
-                        
-                        
-                    }else if (child_done) {
-                        
-                        int size =0;
-                        close(fd[1]);
-                        read(fd[0], &size, sizeof(int));
-                        float ar[size];
-                        read(fd[0], &ar, size*sizeof(float));
-                        for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                        close(fd[0]);
-                        
-                        waitpid(-1,NULL,0);
-                    }else if(cont){ 
-                        alarm(0);
-                        int size=0;
-                        while(!child_done){}
-                        close(fd[1]);
-                        read(fd[0], &size, sizeof(int));
-                        float ar[size];
-                        read(fd[0], &ar, size*sizeof(float));
-                        for(int i=0;i<size;i++) measurements.push_back(ar[i]);
-                        close(fd[0]);
-                        waitpid(-1,NULL,0);
-                    }
-                    
-                    child->evaluation = min_eval(measurements);
-                    
-                    parent_trace->add_child_path(child, schedules_annotations->size());
-
-                    std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
-
-                    //remove the last two characters }\n
-                    schedule_annot.pop_back();
-                    schedule_annot.pop_back();
-                    
-                    if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
-                        schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
-                    else
-                        schedule_annot += ", \n\"execution_times\" : null\n}\n";
-
-                    schedules_annotations->push_back(schedule_annot);
-
-                    if (std::atoi(read_env_var("AS_VERBOSE"))==1){
-                        std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
-                        std::cout << "Evaluation : " << child->evaluation << std::endl;
-                        std::cout << "Number of measurements : " << measurements.size() << std::endl;
-                        std::cout << "===================================" << std::endl << std::endl;
-                    }
-
-                    if (std::isinf(child->evaluation))
-                        std::cerr<< "Evaluation of schedule "<< schedules_annotations->size() <<" failed "<< std::endl;
-
-                    if (child->evaluation < best_evaluation)
-                    {
-                        best_evaluation = child->evaluation;
-                        best_ast = child;
-                    }
-                    to_be_explored.push_back(child);
+            if (pid == -1) {
+                perror("fork failed");
+                exit(1);
+            } else if (pid == 0) {
+                measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                int size =measurements.size();
+                float ar[measurements.size()];
+                for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
+                close(fd[0]);
+                write(fd[1], &size, sizeof(size));
                 
+                write(fd[1], &ar, sizeof(ar));
+                
+                close(fd[1]);
+                _exit(1);
+            }
+
+            // set up the signal handlers after forking so the child doesn't inherit them
+
+            signal(SIGALRM, alarm_handler);
+            signal(SIGCHLD, child_handler);
+            signal(SIGUSR1,sig_usr);
+              // install an alarm to be fired after TIME_LIMIT
+            
+            alarm(TIME_LIMIT);
+            
+            pause();
+
+            if (timeout) {
+                
+                    
+                int result = waitpid(pid, NULL, WNOHANG);
+                if (result == 0) {
+                    // child still running, so kill it
+                    
+                    
+                    // Remove all the optimizations
+                    exec_eval->fct->reset_schedules();
+                    measurements.clear();
+                    measurements.push_back(std::numeric_limits<float>::infinity());
+                    // cancel any previously set alarm 
+                    alarm(0); 
+                    kill(pid, 9);
+                    //kill(pid, SIGKILL);
+                    
+                
+                    waitpid(-1,NULL,0);
+                } else {
+                    
+                    int size = 0;
+                    close(fd[1]);
+                    read(fd[0], &size, sizeof(int));
+                    float ar[size];
+                    read(fd[0], &ar, size*sizeof(float));
+                    for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                    close(fd[0]);
+                    
+                }
+                
+                
+            }else if (child_done) {
+                
+                int size =0;
+                close(fd[1]);
+                read(fd[0], &size, sizeof(int));
+                float ar[size];
+                read(fd[0], &ar, size*sizeof(float));
+                for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                close(fd[0]);
+                
+                waitpid(-1,NULL,0);
+            }else if(cont){ 
+                alarm(0);
+                int size=0;
+                
+                while(!child_done){}
+                
+                close(fd[1]);
+                read(fd[0], &size, sizeof(int));
+                float ar[size];
+                read(fd[0], &ar, size*sizeof(float));
+                for(int i=0;i<size;i++) measurements.push_back(ar[i]);
+                close(fd[0]);
+                waitpid(-1,NULL,0);
+            }
+                    
+            child->evaluation = min_eval(measurements);
+            
+            parent_trace->add_child_path(child, schedules_annotations->size());
+
+            std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
+
+            //remove the last two characters }\n
+            schedule_annot.pop_back();
+            schedule_annot.pop_back();
+            
+            if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
+                schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
+            else
+                schedule_annot += ", \n\"execution_times\" : null\n}\n";
+
+            schedules_annotations->push_back(schedule_annot);
+
+            if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
+                std::cout << "Evaluation : " << child->evaluation << std::endl;
+                std::cout << "Number of measurements : " << measurements.size() << std::endl;
+                std::cout << "===================================" << std::endl << std::endl;
+            }
+
+            if (std::isinf(child->evaluation))
+                std::cerr<< "Evaluation of schedule "<< schedules_annotations->size() <<" failed "<< std::endl;
+
+            if (child->evaluation < best_evaluation)
+            {
+                best_evaluation = child->evaluation;
+                best_ast = child;
+            }
+            to_be_explored.push_back(child);
+            ++iterator;    
         }
     }
 
