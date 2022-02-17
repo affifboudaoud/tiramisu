@@ -6137,7 +6137,6 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
             split_happened = true;
             DEBUG(3, tiramisu::str_dump("Split happenned."));
         }
-        std::cout<<"started Aligning"<<std::endl; 
      
         this->get_function()->align_schedules();
 
