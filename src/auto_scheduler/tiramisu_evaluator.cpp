@@ -54,7 +54,7 @@ float evaluate_by_execution::evaluate(syntax_tree& ast)
     
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    int status = system(gcc_cmd.c_str());
+    
     
     // Execute the wrapper and get execution time
     double exec_time = std::numeric_limits<double>::infinity();
@@ -88,7 +88,7 @@ std::vector<float> evaluate_by_execution::get_measurements(syntax_tree& ast, boo
 
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    int status = system(gcc_cmd.c_str());
+    
 
     // define the execution command of the wrapper
     std::string cmd = wrapper_cmd;
@@ -162,7 +162,7 @@ std::vector<float> evaluate_by_execution::get_measurements_matrix(syntax_tree& a
 
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    int status = system(gcc_cmd.c_str());
+    
 
     // define the execution command of the wrapper
     std::string cmd = wrapper_cmd;
@@ -394,7 +394,19 @@ void evaluate_by_learning_model::represent_computations_from_nodes(ast_node *nod
     for (ast_node *child : node->children)
         represent_computations_from_nodes(child, computations_json, comp_absolute_order);
 }
+std::vector<std::vector<int>>  mat_mul(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2)
+        {
+        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
 
+            for(std::size_t row = 0; row < result.size(); ++row) {
+                for(std::size_t col = 0; col < result.at(0).size(); ++col) {
+                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
+                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
+                    }
+                }
+            }
+            return result;
+        }
 std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast)
 {
     bool interchanged = false;
@@ -412,7 +424,19 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
     int skewing_l0, skewing_l1;
     int skew_extent_l0, skew_extent_l1;
     int parallelized_level;
-    std::vector < std::vector<int> > matrix;
+    int depth = 0;
+    if(ast.new_optims.size()>0) depth = ast.new_optims.at(0).matrix.size();
+    std::vector < std::vector<int> > matrix(depth);
+    for(int l = 0; l<matrix.size(); l++){
+                            matrix.at(l)= std::vector<int>(depth);
+                            for(int c = 0; c<matrix.size(); c++){
+                                            if (l!=c ){
+                                                matrix.at(l).at(c) = 0;
+                                            }else{
+                                                matrix.at(l).at(c) = 1;
+                                            }
+                            }
+                        }
     std::vector < std::vector<int> > init_bounds_matrix;
     std::vector < std::vector<int> > result_bounds_matrix;
 
@@ -452,7 +476,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                 break;
             case optimization_type::MATRIX:
                 transformed_by_matrix = true;
-                matrix = optim_info.matrix;
+                matrix = mat_mul(matrix, optim_info.matrix);
                 init_bounds_matrix=ast.bounds_matrix;
                 result_bounds_matrix=ast.transformed_bounds_matrix;
                 break;

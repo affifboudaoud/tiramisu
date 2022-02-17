@@ -695,7 +695,7 @@ std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(synta
             {
                 //Generate 4 matrices to be explored
                 //Make sure that the number of generated matrices is under MAX_NB_MATRICES
-                for(int i=0;i<4;i++){
+                for(int i=0;i<7;i++){
                     syntax_tree* new_ast = new syntax_tree();
                     new_ast = ast.copy_ast();
                     optimization_info optim_info;

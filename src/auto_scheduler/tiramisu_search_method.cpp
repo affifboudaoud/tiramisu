@@ -427,6 +427,7 @@ bool check_if_repeated( std::vector < std::vector<int> >  matrix,std::vector < s
      
     return false;
 }
+
 std::vector < std::vector < std::vector<int> > > beam_search::get_random_matrcies(int nb_out_matrcies, int depth)
 {
     std::vector <std::vector <  std::vector<int> >>  result(nb_out_matrcies);
@@ -1078,6 +1079,7 @@ std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_
         return std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> (constraint_mat,constraint_mat_with_bounds);
 }
 std::vector <std::vector < std::vector<int> >> matrices;
+std::vector<std::size_t> hashes;
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
     std::default_random_engine rand_generator;
@@ -1113,16 +1115,17 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     bounds_mat = get_ast_isl_bound_matrice(ast);
     constraint_mats = get_ast_isl_constraint_matrice(bounds_mat);
     
-     
+    std::vector<std::vector<std::vector<int>>> repeated;
     // Add the corr_map to the ast structue
     //corr_map = get_corr_map_from_isl(ast);
     //Hash the program string to get a unique seed for each program 
     std::hash<std::string> hasher;
     auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
+    
     srand(hashed);
     int nb_matrices =0;
     int nb_steps = 0;
-    bool illegal = false;
+    
     
     syntax_tree *child = *iterator;
     while (iterator != children.end())
@@ -1132,7 +1135,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         if (nb_steps++>MAX_NB_STEPS){
             break;
         } 
-        if (!illegal)  child = *iterator;
+        child = *iterator;
 
         // Add the corr_map to the ast structue
         //child->corr_map = corr_map;
@@ -1148,22 +1151,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         nb_matrices++;
         
         
-        child->bounds_matrix = bounds_mat;
-        child->constraint_matrix = constraint_mats.second;
-        child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
-        // If the lower bound and the upper bound are inversed due to multiplication we reverse them to keep lower_bound < upper_bound
-        int temp;
-        for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
-            for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
-                {
-                    if ((j==0)&&(child->transformed_bounds_matrix[i][0]>child->transformed_bounds_matrix[i][1])){
-                        temp = child->transformed_bounds_matrix[i][0];
-                        child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
-                        child->transformed_bounds_matrix[i][1] = temp;
-                    }
-                }  
-        }
-        child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
+        //child->bounds_matrix = bounds_mat;
+        //child->constraint_matrix = constraint_mats.second;
+        //child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
+        //child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
         
        
         
@@ -1184,9 +1175,25 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             iterator = children.erase(iterator);
         }
         else {
-
+            std::size_t hash=hasher(evaluate_by_learning_model::get_schedule_json(*child));
+            //std::cout<<"schedule: "<<evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
+            //std::cout<<"hash: "<<hash<<std::endl;
+            //std::cout<<"hashes: "<<hashes.size()<<std::endl;
+            bool repeated = false;
+            for(std::size_t hashe:hashes){
+                //std::cout<<hashe<<" vs "<<hash<<std::endl;
+                if(hashe==hash){
+                    delete child;
+                    iterator = children.erase(iterator);
+                    repeated = true;
+                    //std::cout<<"**************about to continue"<<std::endl;
+                    break;
+                }
+            }
+            if(repeated) continue;
+            hashes.push_back(hash);
             // print and evaluate Ast
-
+            
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 child->print_previous_optims();
                 std::cout << "\n-----------" << std::endl;
@@ -1341,12 +1348,12 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
 
     // Sort children from smallest evaluation to largest
-    std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
-        return a->evaluation < b->evaluation;
-    });
+    //std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
+    //    return a->evaluation < b->evaluation;
+    //});
 
     // shuffle the children so that they are selected a random
-    std::shuffle(std::begin(children), std::end(children), rand_generator);
+    std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
 
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < to_be_explored.size(); ++i)

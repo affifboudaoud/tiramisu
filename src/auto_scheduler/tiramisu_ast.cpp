@@ -1780,14 +1780,41 @@ state_computation::state_computation(state_computation * reference)
             root->print_computations_accesses();
         }
     }
+    std::vector<std::vector<int>>  mat_multiplication(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2)
+        {
+        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
 
+            for(std::size_t row = 0; row < result.size(); ++row) {
+                for(std::size_t col = 0; col < result.at(0).size(); ++col) {
+                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
+                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
+                    }
+                }
+            }
+            return result;
+        }
     std::string syntax_tree::get_schedule_str()
     {
         std::vector<optimization_info> schedule_vect = this->get_schedule();
         std::string schedule_str;
-
+        if(schedule_vect.size()<1) return schedule_str;
+        int depth = schedule_vect.at(0).matrix.size();
+        std::vector < std::vector<int> > matrix(depth);
+        for(int l = 0; l<depth; l++){
+                                    matrix.at(l)= std::vector<int>(depth);
+                                    for(int c = 0; c<depth; c++){
+                                                    if (l!=c ){
+                                                        matrix.at(l).at(c) = 0;
+                                                    }else{
+                                                        matrix.at(l).at(c) = 1;
+                                                    }
+                                    }
+                                }
+        bool first_time = true;
+        int start = 0;
         for (auto optim : schedule_vect)
         {
+            
             switch (optim.type)
             {
             case optimization_type::FUSION:
@@ -1795,14 +1822,24 @@ state_computation::state_computation(state_computation * reference)
                 break;
             case optimization_type::MATRIX:
                 
+                if(first_time){
+                    start = schedule_str.size();
+                    first_time = false; 
+                    
+                    
+                    }
+                schedule_str = schedule_str.substr(0, start);
+                
+                matrix = mat_multiplication(matrix, optim.matrix);
+                
                 schedule_str += "M(";
-                for(int i = 0; i < optim.matrix.size(); i++){
-                        for(int j = 0; j< optim.matrix.size(); j++){
-                            schedule_str += std::to_string(optim.matrix.at(i).at(j));
-                            if(!(i==optim.matrix.size()-1 && j==optim.matrix.size()-1)) schedule_str += ",";
+                for(int i = 0; i < matrix.size(); i++){
+                        for(int j = 0; j< matrix.size(); j++){
+                            
+                            schedule_str += std::to_string(matrix.at(i).at(j));
+                            if(!(i==matrix.size()-1 && j==matrix.size()-1)) schedule_str += ",";
                         }
-            }
-
+                }
                 schedule_str += "),";
                 break;
             case optimization_type::UNFUSE:
@@ -1841,7 +1878,7 @@ state_computation::state_computation(state_computation * reference)
             if (!schedule_vect.empty())
                 schedule_str.pop_back(); // remove last comma
         }
-
+    
         return schedule_str;
     }
 
@@ -1919,6 +1956,12 @@ state_computation::state_computation(state_computation * reference)
 
     std::string candidate_trace::get_exploration_trace_json()
     {
+        std::string exec_time;
+        if (std::isfinite(this->evaluation)) // the evaluation is not finite mean that the schedule didn't run
+                exec_time =  std::to_string(this->evaluation) ;
+            else
+               exec_time =  "null";
+
         std::string trace_json = "{ \"id\": " + std::to_string(this->candidate_id) +
                                  ", \"schedule\": \"" + this->schedule_str + "\"" +
                                  ", \"depth\": " + std::to_string(this->exploration_depth) +
