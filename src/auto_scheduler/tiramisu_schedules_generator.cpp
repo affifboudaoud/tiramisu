@@ -292,7 +292,30 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
         matrix.at(i).at(i) = -1; 
         matrices.push_back(matrix);
     }
-    
+    bool add_random_skew=true;
+        
+        int rand_skew =2;
+        int max_skew=7;
+        if(add_random_skew){
+            for(int i=0;i<rand_skew;i++){
+                std::vector <  std::vector<int> >  matrix(depth);
+                for(int l = 0; l<depth; l++){
+                    matrix.at(l)= std::vector<int>(depth);
+                    for(int c = 0; c<depth; c++){
+                                    if (l!=c ){
+                                        matrix.at(l).at(c) = 0;
+                                    }else{
+                                        matrix.at(l).at(c) = 1;
+                                    }
+                    }
+                }
+                int l0 =(rand() % (depth-1))+1;
+                int l1 = rand() % l0;
+                int l0_fact = (rand() % max_skew) +1;
+                matrix.at(l0).at(l1) = l0_fact;
+                this->matrices.push_back(matrix);
+            }
+        }
     return this->matrices;
 }
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
@@ -506,6 +529,31 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
             }
 
             ast.recover_isl_states();
+        bool add_random_skew=true;
+        
+        int rand_skew =2;
+        int max_skew=7;
+        if(add_random_skew){
+            for(int i=0;i<rand_skew;i++){
+                std::vector <  std::vector<int> >  matrix(depth);
+                for(int l = 0; l<depth; l++){
+                    matrix.at(l)= std::vector<int>(depth);
+                    for(int c = 0; c<depth; c++){
+                                    if (l!=c ){
+                                        matrix.at(l).at(c) = 0;
+                                    }else{
+                                        matrix.at(l).at(c) = 1;
+                                    }
+                    }
+                }
+                int l0 =(rand() % (depth-1))+1;
+                int l1 = rand() % l0;
+                int l0_fact = (rand() % max_skew) +1;
+                matrix.at(l0).at(l1) = l0_fact;
+                this->matrices.push_back(matrix);
+            }
+        }
+        
         return this->matrices;
 }
 std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(syntax_tree const& ast, optimization_type optim)
@@ -695,7 +743,7 @@ std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(synta
             {
                 //Generate 4 matrices to be explored
                 //Make sure that the number of generated matrices is under MAX_NB_MATRICES
-                for(int i=0;i<7;i++){
+                for(int i=0;i<15;i++){
                     syntax_tree* new_ast = new syntax_tree();
                     new_ast = ast.copy_ast();
                     optimization_info optim_info;

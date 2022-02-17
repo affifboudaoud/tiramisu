@@ -1151,9 +1151,24 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         nb_matrices++;
         
         
-        //child->bounds_matrix = bounds_mat;
-        //child->constraint_matrix = constraint_mats.second;
-        //child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,bounds_mat);
+        child->bounds_matrix = bounds_mat;
+        child->constraint_matrix = constraint_mats.second;
+        if(child->transformed_bounds_matrix.size()==0){
+            child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->bounds_matrix);
+        }else{
+            child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->transformed_bounds_matrix);
+        }
+        int temp;
+        for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
+            for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
+                {
+                    if ((j==0)&&(child->transformed_bounds_matrix[i][0]>child->transformed_bounds_matrix[i][1])){
+                        temp = child->transformed_bounds_matrix[i][0];
+                        child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
+                        child->transformed_bounds_matrix[i][1] = temp;
+                    }
+                }  
+        }
         //child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
         
        
