@@ -4279,8 +4279,20 @@ bool tiramisu::function::loop_unrolling_is_legal(tiramisu::var i , std::vector<t
 
         DEBUG_INDENT(-4);
 
-        return {upper_weakly, upper_strongly, lower_weakly, lower_strongly, outer_most_parallelism};
-    }
+    return {upper_weakly,upper_strongly,lower_weakly,lower_strongly,outer_most_parallelism} ;
+
+}
+
+std::tuple<
+        std::vector<std::pair<int,int>>,
+        std::vector<std::pair<int,int>>,
+        std::vector<std::pair<int,int>>> tiramisu::function::skewing_local_solver(std::vector<tiramisu::computation *> fused_computations,
+                                                                                  int outer_level, int inner_level, int nb_parallel)
+{
+    assert(!fused_computations.empty());
+    return skewing_local_solver(fused_computations, var(fused_computations[0]->get_loop_level_names()[outer_level]), var(fused_computations[0]->get_loop_level_names()[inner_level]),nb_parallel);
+}
+
 
     std::tuple<
         std::vector<std::pair<int, int>>,
