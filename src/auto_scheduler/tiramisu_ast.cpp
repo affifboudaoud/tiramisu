@@ -1830,7 +1830,7 @@ state_computation::state_computation(state_computation * reference)
                     }
                 schedule_str = schedule_str.substr(0, start);
                 
-                matrix = mat_multiplication(matrix, optim.matrix);
+                matrix = mat_multiplication(optim.matrix,matrix);
                 
                 schedule_str += "M(";
                 for(int i = 0; i < matrix.size(); i++){

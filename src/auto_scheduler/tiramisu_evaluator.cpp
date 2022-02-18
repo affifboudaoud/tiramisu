@@ -474,9 +474,10 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                 int_l0 = optim_info.l0;
                 int_l1 = optim_info.l1;
                 break;
+
             case optimization_type::MATRIX:
                 transformed_by_matrix = true;
-                matrix = mat_mul(matrix, optim_info.matrix);
+                matrix = mat_mul( optim_info.matrix, matrix);
                 init_bounds_matrix=ast.bounds_matrix;
                 result_bounds_matrix=ast.transformed_bounds_matrix;
                 break;
