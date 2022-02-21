@@ -649,6 +649,23 @@ bool is_identity(std::vector < std::vector<int> > matrix){
         return true;
 }
 /*
+return identity matrix
+*/
+std::vector <  std::vector<int> > get_identity(int depth){
+    std::vector <  std::vector<int> >  matrix(depth);
+        for(int l = 0; l<matrix.size(); l++){
+            matrix.at(l)= std::vector<int>(depth);
+            for(int c = 0; c<matrix.size(); c++){
+                            if (l!=c ){
+                                matrix.at(l).at(c) = 0;
+                            }else{
+                                matrix.at(l).at(c) = 1;
+                            }
+            }
+        }
+        return matrix;
+}
+/*
 Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
 */
   std::vector < std::vector<int> >  get_neighbor_matrix_random_element(std::vector < std::vector<int> >matrix ,int depth)
@@ -1096,11 +1113,23 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     optimization_type optim_type = optimization_type::MATRIX;
 
     children = scheds_gen->generate_schedules(ast, optim_type);
-    
-    if (ast.search_depth==0) matrices=scheds_gen->get_matrices(ast, ast.get_program_depth());
+    std::hash<std::string> hasher;
+
+    auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
+    srand(hashed);
+    if (ast.search_depth==0){
+
+        matrices=scheds_gen->get_matrices(ast, ast.get_program_depth());
+        optimization_info optim_info;
+        optim_info.type = optimization_type::MATRIX;
+        optim_info.comps = ast.computations_list;
+        optim_info.matrix = get_identity(ast.get_program_depth());
+        ast.new_optims.push_back(optim_info);
+        hashes.push_back(hasher(evaluate_by_learning_model::get_schedule_json(ast)));
+    }
     children.resize(std::min((int)matrices.size()-1, (int)children.size()));
     // Stop if no more optimizations can be applied
-    //Add the current AST to the list of children
+    //Add the current AST to the list of children 
     if (children.size() == 0)
         return ;
     
@@ -1119,13 +1148,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // Add the corr_map to the ast structue
     //corr_map = get_corr_map_from_isl(ast);
     //Hash the program string to get a unique seed for each program 
-    std::hash<std::string> hasher;
-    auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
     
-    srand(hashed);
+    
+    
     int nb_matrices =0;
     int nb_steps = 0;
-    
     
     syntax_tree *child = *iterator;
     while (iterator != children.end())
@@ -1158,6 +1185,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         }else{
             child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
         }
+
         /*
         int temp;
         for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
@@ -1209,6 +1237,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             }
             if(repeated) continue;
             hashes.push_back(hash);
+            
             // print and evaluate Ast
             
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
@@ -1357,7 +1386,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     }
 
     to_be_explored.resize(std::min(nb_matrices, (int)to_be_explored.size()));
-    
+    // Add the current AST to the list of children
+    syntax_tree *ast_copy = ast.copy_ast();
+    ast_copy->nb_explored_optims = nb_explored_optims;
+    to_be_explored.push_back(ast_copy);
 
     // Stop if we reached the maximum depth
     if (nb_explored_optims >= max_depth)
@@ -1382,7 +1414,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     for (syntax_tree *child : to_be_explored)
     {
         child->search_depth = ast.search_depth + 1;
-        if (ast.search_depth<MAX_MAT_DEPTH){
+        
+        if (child->search_depth<MAX_MAT_DEPTH){
             search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
         }else{
             search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
