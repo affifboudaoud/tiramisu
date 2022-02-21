@@ -3,7 +3,7 @@
 #include <tiramisu/auto_scheduler/search_method.h>
 
 #include <chrono>
-
+#include <stdexcept>
 namespace tiramisu::auto_scheduler
 {
 
@@ -147,6 +147,10 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
     }
 
     searcher->set_exec_eval(exec_evaluator);
+    std::hash<std::string> hasher;
+
+    auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
+    srand(hashed);
     searcher->search_save_matrix(ast, &schedules_annotations, &exploration_trace_root, schedule_timeout);
 
     std::string output_json;

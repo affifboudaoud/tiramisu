@@ -1138,6 +1138,7 @@ namespace tiramisu::auto_scheduler
         new_ast.fct = fct;
         new_ast.bounds_matrix = bounds_matrix;
         new_ast.transformed_bounds_matrix = transformed_bounds_matrix;
+        new_ast.transformed_constraint_matrix = transformed_constraint_matrix;
         new_ast.computations_list = computations_list;
         new_ast.buffers_list = buffers_list;
         new_ast.buffers_mapping = buffers_mapping;
@@ -1150,6 +1151,7 @@ namespace tiramisu::auto_scheduler
         new_ast.nb_explored_optims = nb_explored_optims;
         new_ast.previous_optims = previous_optims;
         new_ast.new_optims = new_optims;
+        
 
         // In new_ast, the location of computations have changed, so recompute computations_mapping
         new_ast.recompute_computations_mapping();

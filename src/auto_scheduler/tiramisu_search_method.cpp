@@ -161,7 +161,7 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
         nb_explored_optims++;
         nb_optims_tried++;
     }
-
+    std::cout<<"end search save"<<std::endl;
 
     // Stop if no more optimizations can be applied
     if (children.size() == 0)
@@ -1115,8 +1115,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     children = scheds_gen->generate_schedules(ast, optim_type);
     std::hash<std::string> hasher;
 
-    auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
-    srand(hashed);
+    
+    
     if (ast.search_depth==0){
 
         matrices=scheds_gen->get_matrices(ast, ast.get_program_depth());
@@ -1127,6 +1127,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         ast.new_optims.push_back(optim_info);
         hashes.push_back(hasher(evaluate_by_learning_model::get_schedule_json(ast)));
     }
+    std::cout<<"got here"<<std::endl;
     children.resize(std::min((int)matrices.size()-1, (int)children.size()));
     // Stop if no more optimizations can be applied
     //Add the current AST to the list of children 
@@ -1153,7 +1154,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     
     int nb_matrices =0;
     int nb_steps = 0;
-    
+    // Add the current AST to the list of children
+    syntax_tree* new_ast = new syntax_tree();
+    new_ast = ast.copy_ast();
+    children.push_back(new_ast);
     syntax_tree *child = *iterator;
     while (iterator != children.end())
     {
@@ -1385,11 +1389,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         }
     }
 
-    to_be_explored.resize(std::min(nb_matrices, (int)to_be_explored.size()));
-    // Add the current AST to the list of children
-    syntax_tree *ast_copy = ast.copy_ast();
-    ast_copy->nb_explored_optims = nb_explored_optims;
-    to_be_explored.push_back(ast_copy);
+    //to_be_explored.resize(std::min(nb_matrices, (int)to_be_explored.size()));
+    
 
     // Stop if we reached the maximum depth
     if (nb_explored_optims >= max_depth)
@@ -1418,7 +1419,9 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         if (child->search_depth<MAX_MAT_DEPTH){
             search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
         }else{
+            std::cout<<"search save"<<std::endl;
             search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
+            
         }
     }
 }
