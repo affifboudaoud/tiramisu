@@ -1222,11 +1222,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
     bounds_mat = get_ast_isl_bound_matrice(ast);
     constraint_mats = get_ast_isl_constraint_matrice(bounds_mat);
-     for (int i = 0; i <  constraint_mats.first.size(); i++) {
-        for (int j = 0; j < constraint_mats.first[i].size(); j++)
-            std::cout << constraint_mats.first[i][j] << " ";
-        std::cout << std::endl;
-    }
+    
     std::vector<std::vector<std::vector<int>>> repeated;
     // Add the corr_map to the ast structue
     //corr_map = get_corr_map_from_isl(ast);
@@ -1291,14 +1287,32 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             std::cout << child->new_optims.back().matrix[i][j] << " ";
         std::cout << std::endl;
     }
-    std::cout<<"After \n";
+    std::cout<<"After inv \n";
         std::vector<std::vector<int>> test =getInverse(child->new_optims.back().matrix);
         for (int i = 0; i <test.size(); i++) {
         for (int j = 0; j < test[i].size(); j++)
             std::cout << test[i][j] << " ";
         std::cout << std::endl;
     }
-        child->transformed_constraint_matrix = multiply(constraint_mats.first,getInverse(child->new_optims.back().matrix));
+        std::cout<<"before trans \n";
+      if(child->transformed_constraint_matrix.size()==0){
+          
+           for (int i = 0; i <  constraint_mats.first.size(); i++) {
+                for (int j = 0; j < constraint_mats.first[i].size(); j++)
+                    std::cout << constraint_mats.first[i][j] << " ";
+                std::cout << std::endl;
+            }
+            child->transformed_constraint_matrix = multiply(constraint_mats.first,getInverse(child->new_optims.back().matrix));
+        }else{
+            for (int i = 0; i <   child->transformed_constraint_matrix.size(); i++) {
+                for (int j = 0; j <  child->transformed_constraint_matrix[i].size(); j++)
+                    std::cout <<  child->transformed_constraint_matrix[i][j] << " ";
+                std::cout << std::endl;
+            }
+            child->transformed_constraint_matrix = multiply(child->transformed_constraint_matrix,getInverse(child->new_optims.back().matrix));
+        }
+     
+
       std::cout<<"After mult \n";
     
         for (int i = 0; i <child->transformed_constraint_matrix.size(); i++) {
