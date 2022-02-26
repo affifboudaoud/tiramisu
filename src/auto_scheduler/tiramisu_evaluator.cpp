@@ -54,7 +54,7 @@ float evaluate_by_execution::evaluate(syntax_tree& ast)
     
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    
+    int status = system(gcc_cmd.c_str());
     
     // Execute the wrapper and get execution time
     double exec_time = std::numeric_limits<double>::infinity();
@@ -88,7 +88,7 @@ std::vector<float> evaluate_by_execution::get_measurements(syntax_tree& ast, boo
 
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    
+    int status = system(gcc_cmd.c_str());
 
     // define the execution command of the wrapper
     std::string cmd = wrapper_cmd;
@@ -162,7 +162,7 @@ std::vector<float> evaluate_by_execution::get_measurements_matrix(syntax_tree& a
 
     // Turn the object file to a shared library
     std::string gcc_cmd = "g++ -shared -o " + obj_filename + ".so " + obj_filename;
-    
+    int status = system(gcc_cmd.c_str());
 
     // define the execution command of the wrapper
     std::string cmd = wrapper_cmd;

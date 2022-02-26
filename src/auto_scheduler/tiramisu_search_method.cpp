@@ -1076,6 +1076,84 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
      
         return isl_ast_mat;
 }
+
+std::vector<std::vector<int>> getTranspose(const std::vector<std::vector<int>> matrix1) {
+
+    //Transpose-matrix: height = width(matrix), width = height(matrix)
+    std::vector<std::vector<int>> solution(matrix1[0].size(), std::vector<int> (matrix1.size()));
+
+    //Filling solution-matrix
+    for(size_t i = 0; i < matrix1.size(); i++) {
+        for(size_t j = 0; j < matrix1[0].size(); j++) {
+            solution[j][i] = matrix1[i][j];
+        }
+    }
+    return solution;
+}
+
+std::vector<std::vector<int>> getCofactor(const std::vector<std::vector<int>> vect) {
+    if(vect.size() != vect[0].size()) {
+        throw std::runtime_error("Matrix is not quadratic");
+    } 
+
+    std::vector<std::vector<int>> solution(vect.size(), std::vector<int> (vect.size()));
+    std::vector<std::vector<int>> subVect(vect.size() - 1, std::vector<int> (vect.size() - 1));
+
+    for(std::size_t i = 0; i < vect.size(); i++) {
+        for(std::size_t j = 0; j < vect[0].size(); j++) {
+
+            int p = 0;
+            for(size_t x = 0; x < vect.size(); x++) {
+                if(x == i) {
+                    continue;
+                }
+                int q = 0;
+
+                for(size_t y = 0; y < vect.size(); y++) {
+                    if(y == j) {
+                        continue;
+                    }
+
+                    subVect[p][q] = vect[x][y];
+                    q++;
+                }
+                p++;
+            }
+            solution[i][j] = pow(-1, i + j) * determinant(subVect,subVect.size());
+        }
+    }
+    return solution;
+}
+
+std::vector<std::vector<int>> getInverse(const std::vector<std::vector<int>> A) {
+    int d = 1.0/determinant(A,A.size());
+    std::vector<std::vector<int>> solution(A.size(), std::vector<int> (A.size()));
+
+    if(A.size() == 1){
+        std::vector<int> ans = {0};
+        ans[0] = 1.0/determinant(A,A.size());
+        solution[0] = ans;
+        return solution;
+    }
+
+    for(size_t i = 0; i < A.size(); i++) {
+        for(size_t j = 0; j < A.size(); j++) {
+            solution[i][j] = A[i][j] * d; 
+        }
+    }
+    if(d==1){return getTranspose(getCofactor(solution));}
+    if(d==-1){   std::vector<std::vector<int>> res=getTranspose(getCofactor(solution));
+             for (int i = 0; i < res.size(); i++) {
+                for (int j = 0; j < res[i].size(); j++)
+                   res[i][j] =  -res[i][j];
+              
+              }
+              return res;
+    }
+
+}
+
+
 std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_isl_constraint_matrice( std::vector<std::vector<int>> isl_ast_mat){
 
         std::vector< std::vector<int>> constraint_mat;
@@ -1144,7 +1222,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
     bounds_mat = get_ast_isl_bound_matrice(ast);
     constraint_mats = get_ast_isl_constraint_matrice(bounds_mat);
-    
+     for (int i = 0; i <  constraint_mats.first.size(); i++) {
+        for (int j = 0; j < constraint_mats.first[i].size(); j++)
+            std::cout << constraint_mats.first[i][j] << " ";
+        std::cout << std::endl;
+    }
     std::vector<std::vector<std::vector<int>>> repeated;
     // Add the corr_map to the ast structue
     //corr_map = get_corr_map_from_isl(ast);
@@ -1203,8 +1285,27 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 }  
         }
         */
-        //child->transformed_constraint_matrix = multiply_plus(constraint_mats.first,child->new_optims.back().matrix,constraint_mats.second);
-        
+       std::cout<<"Orig\n";
+        for (int i = 0; i <child->new_optims.back().matrix.size(); i++) {
+        for (int j = 0; j < child->new_optims.back().matrix[i].size(); j++)
+            std::cout << child->new_optims.back().matrix[i][j] << " ";
+        std::cout << std::endl;
+    }
+    std::cout<<"After \n";
+        std::vector<std::vector<int>> test =getInverse(child->new_optims.back().matrix);
+        for (int i = 0; i <test.size(); i++) {
+        for (int j = 0; j < test[i].size(); j++)
+            std::cout << test[i][j] << " ";
+        std::cout << std::endl;
+    }
+        child->transformed_constraint_matrix = multiply(constraint_mats.first,getInverse(child->new_optims.back().matrix));
+      std::cout<<"After mult \n";
+    
+        for (int i = 0; i <child->transformed_constraint_matrix.size(); i++) {
+        for (int j = 0; j <child->transformed_constraint_matrix[i].size(); j++)
+            std::cout << child->transformed_constraint_matrix[i][j] << " ";
+        std::cout << std::endl;
+    }  
        
         
 
