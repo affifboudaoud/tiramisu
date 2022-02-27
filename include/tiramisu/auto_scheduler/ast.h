@@ -405,10 +405,14 @@ public:
 
     tiramisu::function *fct;
 
-     /**
+    /**
      * The bounds of the original loops
      * **/
     std::vector<std::vector<int>> bounds_matrix;
+    /**
+     * Tranformation matrix 
+     * **/
+    std::vector<std::vector<int>> transformation_matrix;
     /**
      * The bounds of the transformed loops
      * **/
@@ -468,7 +472,11 @@ public:
      * Used to keep track of the number of optimizations explored by a search method.
      */
     int nb_explored_optims = 0;
-    
+    /**
+     * The total number of explored optimizations.
+     * Used to keep track of the number of optimizations explored by a search method.
+     */
+    int nb_explored_matrices = 0;
     /**
      *
      */

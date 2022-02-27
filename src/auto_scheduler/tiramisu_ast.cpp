@@ -1149,6 +1149,7 @@ namespace tiramisu::auto_scheduler
         new_ast.evaluation = evaluation;
         new_ast.search_depth = search_depth;
         new_ast.nb_explored_optims = nb_explored_optims;
+        new_ast.nb_explored_matrices = nb_explored_matrices;
         new_ast.previous_optims = previous_optims;
         new_ast.new_optims = new_optims;
         

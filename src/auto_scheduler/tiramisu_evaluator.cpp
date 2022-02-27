@@ -407,6 +407,7 @@ std::vector<std::vector<int>>  mat_mul(const std::vector<std::vector<int>> & m1,
             }
             return result;
         }
+        
 std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast)
 {
     bool interchanged = false;
@@ -438,8 +439,8 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                             }
                         }
     std::vector < std::vector<int> > init_bounds_matrix;
-    std::vector < std::vector<int> > result_bounds_matrix;
-
+    std::vector < std::vector<int> > result_const_matrix;
+    std::vector < std::vector<int> > constraint_matrix;
     // Get information about the schedule
     for (optimization_info const& optim_info : ast.new_optims)
     {
@@ -479,7 +480,8 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                 transformed_by_matrix = true;
                 matrix = mat_mul( optim_info.matrix, matrix);
                 init_bounds_matrix=ast.bounds_matrix;
-                result_bounds_matrix=ast.transformed_bounds_matrix;
+                constraint_matrix = ast.constraint_matrix;
+                result_const_matrix=ast.transformed_constraint_matrix;
                 break;
             case optimization_type::UNROLLING:
                 unrolled = true;
@@ -535,13 +537,15 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
         comp_sched_json += "],";
         // JSON for initial constraint matrix
         comp_sched_json += "\"initial_constraint_matrix\" : [";
-
+        std::vector<std::vector<int>> bounds_mat;
+        std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
+        
         if (transformed_by_matrix)
         {
-            for(int i = 0; i < init_bounds_matrix.size(); i++){
-                        for(int j = 0; j< init_bounds_matrix.at(i).size(); j++){
-                            comp_sched_json += "\"" + std::to_string(init_bounds_matrix.at(i).at(j))+"\"";
-                            if(!(i==init_bounds_matrix.size()-1 && j==init_bounds_matrix.at(i).size()-1)) comp_sched_json += ", ";
+            for(int i = 0; i < constraint_matrix.size(); i++){
+                        for(int j = 0; j< constraint_matrix.at(i).size(); j++){
+                            comp_sched_json += "\"" + std::to_string(constraint_matrix.at(i).at(j))+"\"";
+                            if(!(i==constraint_matrix.size()-1 && j==constraint_matrix.at(i).size()-1)) comp_sched_json += ", ";
                         }
             }
 
@@ -567,10 +571,10 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
 
         if (transformed_by_matrix)
         {
-            for(int i = 0; i < result_bounds_matrix.size(); i++){
-                        for(int j = 0; j< result_bounds_matrix.at(i).size(); j++){
-                            comp_sched_json += "\"" + std::to_string(result_bounds_matrix.at(i).at(j))+"\"";
-                            if(!(i==result_bounds_matrix.size()-1 && j==result_bounds_matrix.at(i).size()-1)) comp_sched_json += ", ";
+            for(int i = 0; i < result_const_matrix.size(); i++){
+                        for(int j = 0; j< result_const_matrix.at(i).size(); j++){
+                            comp_sched_json += "\"" + std::to_string(result_const_matrix.at(i).at(j))+"\"";
+                            if(!(i==result_const_matrix.size()-1 && j==result_const_matrix.at(i).size()-1)) comp_sched_json += ", ";
                         }
             }
 

@@ -33,7 +33,7 @@ std::vector<syntax_tree*> exhaustive_generator::generate_schedules(syntax_tree c
             break;
         case optimization_type::MATRIX:
             {
-                for(int i=0;i<4;i++){
+                for(int i=0;i<24;i++){
                         syntax_tree* new_ast = new syntax_tree();
                         new_ast = ast.copy_ast();
                         optimization_info optim_info;
@@ -442,6 +442,12 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                             }
                             matrix.at(l0).at(l1) = l1_fact;
                             matrix.at(l0).at(l0) = l0_fact;
+                            if(l0_fact==3 && l1_fact==2){
+                                matrix.at(l0+1).at(l0) = 1;
+                            }
+                            if(l0_fact!=1 && l1_fact==1){
+                                matrix.at(l0+1).at(l0) = l0_fact-1;
+                            }
                             this->matrices.push_back(matrix);
                             
                         }
@@ -476,6 +482,12 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                             }
                             matrix.at(l0).at(l1) = l1_fact;
                             matrix.at(l0).at(l0) = l0_fact;
+                            if(l0_fact==3 && l1_fact==2){
+                                matrix.at(l0+1).at(l0) = 1;
+                            }
+                            if(l0_fact!=1 && l1_fact==1){
+                                matrix.at(l0+1).at(l0) = l0_fact-1;
+                            }
                             this->matrices.push_back(matrix);
                         }
                         ast.stage_isl_states();
@@ -519,6 +531,12 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                             }
                             matrix.at(l0).at(l1) = l1_fact;
                             matrix.at(l0).at(l0) = l0_fact;
+                            if(l0_fact==3 && l1_fact==2){
+                                matrix.at(l0+1).at(l0) = 1;
+                            }
+                            if(l0_fact!=1 && l1_fact==1){
+                                matrix.at(l0+1).at(l0) = l0_fact-1;
+                            }
                             this->matrices.push_back(matrix);
                         }
                         ast.stage_isl_states();
@@ -764,7 +782,7 @@ std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(synta
             {
                 //Generate 4 matrices to be explored
                 //Make sure that the number of generated matrices is under MAX_NB_MATRICES
-                for(int i=0;i<16;i++){
+                for(int i=0;i<25;i++){
                     syntax_tree* new_ast = new syntax_tree();
                     new_ast = ast.copy_ast();
                     optimization_info optim_info;
