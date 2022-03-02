@@ -139,10 +139,7 @@ void sig_usr(int signo){
 bool changes_mes = false;
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    /*
-    std::cout<<"search saving"<<std::endl;
-    return;
-    */
+    
     std::default_random_engine rand_generator;
     
     //if (ast.nb_explored_optims % NB_OPTIMIZATIONS == 0)
@@ -311,10 +308,12 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
            
             
             child->evaluation = min_eval(measurements);
-
+            
             parent_trace->add_child_path(child, schedules_annotations->size());
 
             std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
+
+            
 
             //remove the last two characters }\n
             schedule_annot.pop_back();
@@ -342,14 +341,14 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 best_evaluation = child->evaluation;
                 best_ast = child;
             }
-
+            
             ++iterator;
 
         }
 
         nb_explored_schedules++;
     }
-
+    
     // Stop if we reached the maximum depth
     if (nb_explored_optims >= max_depth)
         return ;
@@ -366,11 +365,11 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
     });
     // shuffle the children so that they are selected a random
 //    std::shuffle(std::begin(children), std::end(children), rand_generator);
-
+    
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < children.size(); ++i)
         delete children[i];
-
+    
     children.resize(std::min(beam_size, (int)children.size()));
 
     // Search recursively on the best children
@@ -1181,12 +1180,13 @@ std::vector <std::vector < std::vector<int> >> matrices;
 std::vector<std::size_t> hashes;
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
+    //std::cout<<"nb explored mats: "<<ast.nb_explored_matrices<<" exploration depth: "<<ast.search_depth<<std::endl;    
     std::default_random_engine rand_generator;
 
 
     std::vector<syntax_tree*> children;
     std::vector<syntax_tree*> to_be_explored;
-
+    std::vector<syntax_tree*> to_be_searched;
     
     int nb_explored_optims = ast.nb_explored_optims;
     
@@ -1240,9 +1240,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     new_ast = ast.copy_ast();
     children.push_back(new_ast);
     syntax_tree *child = *iterator;
+    
     while (iterator != children.end())
     {
-
+        
         //If we tried to find a new matrix too many times, we give up and explore the ones we found so far 
         if (nb_steps++>MAX_NB_STEPS){
             break;
@@ -1263,35 +1264,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         nb_matrices++;
         
         
-        child->bounds_matrix = bounds_mat;
-        child->constraint_matrix = constraint_mats.first;
-        if(child->transformed_bounds_matrix.size()==0){
-            child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->bounds_matrix);
-        }else{
-            child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
-        }
-        if(child->transformation_matrix.size()==0){
-            child->transformation_matrix = child->new_optims.back().matrix;
-        }else{
-            child->transformation_matrix = multiply( child->new_optims.back().matrix,child->transformation_matrix);
-        }
-        /*
-        int temp;
-        for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
-            for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
-                {
-                    if ((j==0)&&(child->transformed_bounds_matrix[i][0]>child->transformed_bounds_matrix[i][1])){
-                        temp = child->transformed_bounds_matrix[i][0];
-                        child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
-                        child->transformed_bounds_matrix[i][1] = temp;
-                    }
-                }  
-        }
-        */
-      
-        std::vector<std::vector<int>> test = getInverse(child->transformation_matrix);
         
-        child->transformed_constraint_matrix = multiply(constraint_mats.first,test);
         /*
         if(child->transformed_constraint_matrix.size()==0){
            std::cout<<"First time, tranformormed constraint size is zero prinintg the original constraint matrix "<<std::endl;
@@ -1332,25 +1305,69 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             iterator = children.erase(iterator);
         }
         else {
+            child->bounds_matrix = bounds_mat;
+            child->constraint_matrix = constraint_mats.first;
+            
+            if(child->transformed_bounds_matrix.size()==0){
+                child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->bounds_matrix);
+            }else{
+                child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
+            }
+            if(child->transformation_matrix.size()==0){
+                child->transformation_matrix = child->new_optims.back().matrix;
+            }else{
+                child->transformation_matrix = multiply( child->new_optims.back().matrix,child->transformation_matrix);
+            }
+            /*
+            int temp;
+            for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
+                for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
+                    {
+                        if ((j==0)&&(child->transformed_bounds_matrix[i][0]>child->transformed_bounds_matrix[i][1])){
+                            temp = child->transformed_bounds_matrix[i][0];
+                            child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
+                            child->transformed_bounds_matrix[i][1] = temp;
+                        }
+                    }  
+            }
+            */
+        
+            std::vector<std::vector<int>> test = getInverse(child->transformation_matrix);
+            
+            child->transformed_constraint_matrix = multiply(constraint_mats.first,test);
             std::size_t hash=hasher(evaluate_by_learning_model::get_schedule_json(*child));
             //std::cout<<"schedule: "<<evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
             //std::cout<<"hash: "<<hash<<std::endl;
             //std::cout<<"hashes: "<<hashes.size()<<std::endl;
             bool repeated = false;
+            if(hash == parent_hash){
+                // the first parent is not being detected by this because of the contraint matrix in the hashed json
+                    //std::cout<<"added to to be explroed"<<child->nb_explored_matrices<<std::endl;
+                    syntax_tree *ast_copy = child->copy_ast();
+                    ast_copy->nb_explored_optims = nb_explored_optims;
+                    to_be_explored.push_back(ast_copy);
+                    //std::cout<<"added to to be explroed"<<ast_copy->nb_explored_matrices<<std::endl;
+                    parent_trace->add_child_path(ast_copy, parent_trace->get_candidate_id());
+            } 
             for(std::size_t hashe:hashes){
-                //std::cout<<hashe<<" vs "<<hash<<std::endl;
+                //std::cout<<hashe<<" vs "<<hash<<std::endl;*********************************
                 if(hashe==hash){
                     delete child;
                     iterator = children.erase(iterator);
                     repeated = true;
-                    //std::cout<<"**************about to continue"<<std::endl;
                     break;
+                    //std::cout<<"about to continue"<<std::endl;
                 }
             }
-            if(hash == parent_hash) to_be_explored.push_back(child);
-            if(repeated) continue;
+        
+            if(repeated){
+                    continue;
+            }
+
+            
+             
             hashes.push_back(hash);
-                
+               
             // print and evaluate Ast
             
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
@@ -1463,7 +1480,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                     
             child->evaluation = min_eval(measurements);
 
-            child->nb_explored_matrices = child->nb_explored_matrices +1; 
+            if(hash != parent_hash) child->nb_explored_matrices = child->nb_explored_matrices +1; 
             parent_trace->add_child_path(child, schedules_annotations->size());
 
             std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
@@ -1495,10 +1512,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 best_ast = child;
             }
             to_be_explored.push_back(child);
-            ++iterator;     
+            ++iterator;  
+            
         }
     }
-
+    
     //to_be_explored.resize(std::min(nb_matrices, (int)to_be_explored.size()));
     
 
@@ -1512,23 +1530,23 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     // shuffle the children so that they are selected a random
     std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
-
+    
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < to_be_explored.size(); ++i)
        delete to_be_explored[i];
+    
 
     to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
-
+    
     // Search recursively on the best children
+    //std::cout<<"to be explored: "<<to_be_explored.size()<<"depth: "<<child->search_depth<<std::endl;
     for (syntax_tree *child : to_be_explored)
     {
         child->search_depth = ast.search_depth + 1;
-        std::size_t hash=hasher(evaluate_by_learning_model::get_schedule_json(*child));
-        if (child->search_depth<MAX_MAT_DEPTH && hash != parent_hash){
-            std::cout<<"search depth: "<<child->search_depth<<" nb explored matrices: "<<child->nb_explored_matrices<<std::endl;
+        if (child->search_depth<MAX_MAT_DEPTH && child->search_depth<=child->nb_explored_matrices ){
             search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
         }else{
-            std::cout<<"search save"<<std::endl;
+            
             search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
             
         }
