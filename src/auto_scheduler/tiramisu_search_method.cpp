@@ -139,7 +139,7 @@ void sig_usr(int signo){
 bool changes_mes = false;
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    
+    std::cout<<"starting search save"<<std::endl;
     std::default_random_engine rand_generator;
     
     //if (ast.nb_explored_optims % NB_OPTIMIZATIONS == 0)
@@ -406,30 +406,7 @@ int determinant( std::vector <  std::vector<int> >  matrix, int n) {
    }
    return det;
 }
-bool check_if_repeated( std::vector < std::vector<int> >  matrix,std::vector < std::vector < std::vector<int> > > matrices)
-{
-    //if there are no matrices to compare to then we return false
-    if(matrices.size()==0) return false;
-    
-    int depth = matrix.size();
-    int i=0;
-    while(i<matrices.size()){
-        //for each matrix that we already explored  
-        bool diffrent = false;
-        for (int s=0;s<depth;s++){
-                for (int d=0;d<depth;d++){
-                            // set diffrent to true if we find one element that is not the same
-                            if (matrix.at(s).at(d)!=matrices.at(i).at(s).at(d)) diffrent =true ;
-                    }
-        }
-        //if we found the same matrix return true
-        if (!diffrent) return true;
-    i++;
-    }
 
-     
-    return false;
-}
 
 std::vector < std::vector < std::vector<int> > > beam_search::get_random_matrcies(int nb_out_matrcies, int depth)
 {
@@ -1180,6 +1157,7 @@ std::vector <std::vector < std::vector<int> >> matrices;
 std::vector<std::size_t> hashes;
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
+    //std::cout<<"starting search save matrix"<<std::endl;
     //std::cout<<"nb explored mats: "<<ast.nb_explored_matrices<<" exploration depth: "<<ast.search_depth<<std::endl;    
     std::default_random_engine rand_generator;
 
@@ -1199,9 +1177,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     std::size_t parent_hash=hasher(evaluate_by_learning_model::get_schedule_json(ast));
     
-    
+    matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
     if (ast.search_depth==0){
-        matrices=scheds_gen->get_matrices(ast, ast.get_program_depth());
         optimization_info optim_info;
         optim_info.type = optimization_type::MATRIX;
         optim_info.comps = ast.computations_list;
@@ -1211,10 +1188,13 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     }
     
     children.resize(std::min((int)matrices.size()-1, (int)children.size()));
+    
     // Stop if no more optimizations can be applied
     //Add the current AST to the list of children 
-    if (children.size() == 0)
+    if (children.size() == 0){
+        //std::cout<<"about to continue"<<std::endl;
         return ;
+    }
     
     // Evaluate children and sort them from smallest to highest evaluation
     // evaluate while removing illegal versions
@@ -1250,7 +1230,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             break;
         } 
         child = *iterator;
-
+        
         // Add the corr_map to the ast structue
         //child->corr_map = corr_map;
         
@@ -1262,20 +1242,22 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         //add the matrix to optim.info
         
         child->new_optims.back().matrix = matrices.at(nb_matrices);
+        
         nb_matrices++;
         
         
         child->bounds_matrix = bounds_mat;
             
-            
+        //std::cout<<"before multiply"<<std::endl;    
         if(child->transformed_bounds_matrix.size()==0){
             child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->bounds_matrix);
         }else{
             child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
         }
-      
+        //std::cout<<"after multiply"<<std::endl;
        
-        
+        //std::cout << "child hash of hash of:  " << evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
+        //std::cout << "parent of hash of:  " << evaluate_by_learning_model::get_schedule_json(ast)<<std::endl;
 
         child->transform_ast();
 
@@ -1306,17 +1288,16 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             
             child->transformed_constraint_matrix = multiply(constraint_mats.first,test);
             std::size_t hash=hasher(evaluate_by_learning_model::get_schedule_json(*child));
-            //std::cout<<"schedule: "<<evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
-            //std::cout<<"hash: "<<hash<<std::endl;
-            //std::cout<<"hashes: "<<hashes.size()<<std::endl;
+            
             bool repeated = false;
+            
             if(hash == parent_hash){
-                // the first parent is not being detected by this because of the contraint matrix in the hashed json
                     //std::cout<<"added to to be explroed"<<child->nb_explored_matrices<<std::endl;
                     syntax_tree *ast_copy = child->copy_ast();
                     ast_copy->nb_explored_optims = nb_explored_optims;
+                    
                     to_be_explored.push_back(ast_copy);
-                    //std::cout<<"added to to be explroed"<<ast_copy->nb_explored_matrices<<std::endl;
+                    
                     parent_trace->add_child_path(ast_copy, parent_trace->get_candidate_id());
             } 
             for(std::size_t hashe:hashes){
@@ -1369,7 +1350,9 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
                 int size =measurements.size();
                 float ar[measurements.size()];
+                
                 for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
+                
                 close(fd[0]);
                 write(fd[1], &size, sizeof(size));
                 
@@ -1492,18 +1475,28 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
    
 
+    for (syntax_tree *child : to_be_explored){
+        //std::cout << "ifwdq " << std::endl;
+            //std::cout << child->search_depth <<child->nb_explored_matrices<< std::endl;
+            if (child->search_depth > child->nb_explored_matrices){
+                //std::cout << "if ebfdwkh " << std::endl;
+                child->evaluation =0;
+            }
 
+    }
     // Sort children from smallest evaluation to largest
-    //std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
-    //    return a->evaluation < b->evaluation;
-    //});
+    std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
+       return a->evaluation < b->evaluation;
+    });
 
     // shuffle the children so that they are selected a random
-    std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
+    //std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
     
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < to_be_explored.size(); ++i)
        delete to_be_explored[i];
+    
+    
     
 
     to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
@@ -1516,7 +1509,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         if (child->search_depth<MAX_MAT_DEPTH && child->search_depth<=child->nb_explored_matrices ){
             search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
         }else{
-            if (child->search_depth>child->nb_explored_matrices) std::cout<<"exploring Parent"<<std::endl;
+            //if (child->search_depth>child->nb_explored_matrices) std::cout << "Number of measurements : " << std::endl;
             search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);  
         }
     }

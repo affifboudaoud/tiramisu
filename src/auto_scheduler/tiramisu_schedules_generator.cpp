@@ -1,7 +1,7 @@
 #include <tiramisu/auto_scheduler/schedules_generator.h>
 #include <tiramisu/auto_scheduler/evaluator.h>
 #include <random>
-
+#define MAX_MATS_PER_LEVEL 20  
 namespace tiramisu::auto_scheduler
 {
 
@@ -34,7 +34,7 @@ std::vector<syntax_tree*> exhaustive_generator::generate_schedules(syntax_tree c
             break;
         case optimization_type::MATRIX:
             {
-                for(int i=0;i<24;i++){
+                for(int i=0;i<MAX_MATS_PER_LEVEL;i++){
                         syntax_tree* new_ast = new syntax_tree();
                         new_ast = ast.copy_ast();
                         optimization_info optim_info;
@@ -51,7 +51,30 @@ std::vector<syntax_tree*> exhaustive_generator::generate_schedules(syntax_tree c
     
     return states;
 }
+bool check_if_repeated( std::vector < std::vector<int> >  matrix,std::vector < std::vector < std::vector<int> > > matrices)
+{
+    //if there are no matrices to compare to then we return false
+    if(matrices.at(0).size()==0) return false;
 
+    int depth = matrix.size();
+    int i=0;
+    while(i<matrices.size() && matrices.at(i).size()!=0){ 
+        //for each matrix that we already explored  
+        bool diffrent = false;
+        for (int s=0;s<depth;s++){
+                for (int d=0;d<depth;d++){
+                            // set diffrent to true if we find one element that is not the same
+                            if (matrix.at(s).at(d)!=matrices.at(i).at(s).at(d)) diffrent =true ;
+                    }
+        }
+        //if we found the same matrix return true
+        if (!diffrent) return true;
+    i++;
+    }
+
+
+    return false;
+}
 void exhaustive_generator::generate_fusions(std::vector<ast_node*> const& tree_level, std::vector<syntax_tree*>& states, syntax_tree const& ast)
 {
     for (int i = 0; i < tree_level.size(); ++i)
@@ -314,13 +337,14 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                 int l1 = rand() % l0;
                 int l0_fact = (rand() % max_skew) +1;
                 matrix.at(l0).at(l1) = l0_fact;
-                this->matrices.push_back(matrix);
+                if(check_if_repeated(matrix, this->matrices)) this->matrices.push_back(matrix);
             }
         }
     std::default_random_engine rand_generator;
     std::shuffle(std::begin(this->matrices), std::end(this->matrices), rand_generator);
     return this->matrices;
 }
+
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
 {
     std::vector<ast_node*> shared_nodes;
@@ -550,7 +574,9 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
             }
 
             ast.recover_isl_states();
+        bool add_3d_skew=true;
         
+        int d3_skew = 2;
         bool add_random_skew=true;
         
         int rand_skew = 2;
@@ -572,7 +598,7 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                 int l1 = rand() % l0;
                 int l0_fact = (rand() % max_skew) +1;
                 matrix.at(l0).at(l1) = l0_fact;
-                this->matrices.push_back(matrix);
+                if(check_if_repeated(matrix, this->matrices)) this->matrices.push_back(matrix);
             }
         }
         if(add_random_skew){
@@ -592,12 +618,67 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                 int l1 = rand() % l0;
                 int l0_fact = (rand() % max_skew) +1;
                 matrix.at(l1).at(l0) = l0_fact;
-                this->matrices.push_back(matrix);
+                if(check_if_repeated(matrix, this->matrices)) this->matrices.push_back(matrix);
+            }
+        }
+        bool saw_zero = false;
+        int cpt = 0;
+        if(add_3d_skew){
+            for(int i=0;i<d3_skew;i++){
+                saw_zero = false;
+                cpt = 0;
+                std::vector <  std::vector<int> >  matrix(depth);
+                for(int l = 0; l<depth; l++){
+                    matrix.at(l)= std::vector<int>(depth);
+                    for(int c = 0; c<depth; c++){
+                                    if (l!=c ){
+                                        matrix.at(l).at(c) = 0;
+                                    }else{
+                                        matrix.at(l).at(c) = 1;
+                                    }
+                    }
+                }
+                int l0 =rand() % (depth-1);
+                int l0_fact;
+                
+                for(int j=0;j<depth;j++){
+                    if (saw_zero){l0_fact = (rand() % max_skew) +1;}else{l0_fact = (rand() % max_skew);}
+                    if(l0_fact == 0) cpt++;
+                    if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
+                    if (j!=l0)matrix.at(l0).at(j) = l0_fact;
+                }
+                if(check_if_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
+            }
+            
+            for(int i=0;i<d3_skew;i++){
+                saw_zero = false;
+                cpt = 0;
+                std::vector <  std::vector<int> >  matrix(depth);
+                for(int l = 0; l<depth; l++){
+                    matrix.at(l)= std::vector<int>(depth);
+                    for(int c = 0; c<depth; c++){
+                                    if (l!=c ){
+                                        matrix.at(l).at(c) = 0;
+                                    }else{
+                                        matrix.at(l).at(c) = 1;
+                                    }
+                    }
+                }
+                int l0 =rand() % (depth-1);
+                int l0_fact;
+                for(int k=0;k<depth;k++){
+                    if (saw_zero){l0_fact = (rand() % max_skew) +1;}else{l0_fact = (rand() % max_skew);}
+                    if(l0_fact == 0) cpt++;
+                    if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
+                    if (k!=l0)matrix.at(k).at(l0) = l0_fact;
+                }
+                if(check_if_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
             }
         }
         
         return this->matrices;
 }
+
 std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(syntax_tree const& ast, optimization_type optim)
 {
     // This method generates schedules applied on shared loops, so it does not
@@ -785,7 +866,7 @@ std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(synta
             {
                 //Generate 4 matrices to be explored
                 //Make sure that the number of generated matrices is under MAX_NB_MATRICES
-                for(int i=0;i<25;i++){
+                for(int i=0;i<MAX_MATS_PER_LEVEL;i++){
                     syntax_tree* new_ast = new syntax_tree();
                     new_ast = ast.copy_ast();
                     optimization_info optim_info;

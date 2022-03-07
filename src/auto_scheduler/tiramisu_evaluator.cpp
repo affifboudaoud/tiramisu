@@ -428,6 +428,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
     int depth = 0;
     if(ast.new_optims.size()>0) depth = ast.new_optims.at(0).matrix.size();
     std::vector < std::vector<int> > matrix(depth);
+     std::vector <std::vector < std::vector<int> >> matrices;
     for(int l = 0; l<matrix.size(); l++){
                             matrix.at(l)= std::vector<int>(depth);
                             for(int c = 0; c<matrix.size(); c++){
@@ -478,10 +479,8 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
 
             case optimization_type::MATRIX:
                 transformed_by_matrix = true;
+                matrices.push_back(optim_info.matrix);
                 matrix = mat_mul( optim_info.matrix, matrix);
-                init_bounds_matrix=ast.bounds_matrix;
-                constraint_matrix = ast.constraint_matrix;
-                result_const_matrix=ast.transformed_constraint_matrix;
                 break;
             case optimization_type::UNROLLING:
                 unrolled = true;
@@ -536,6 +535,26 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
         
         comp_sched_json += "],";
         // JSON for matrices
+        
+        comp_sched_json += "\"transformation_matrices\" : [";
+        
+        if (transformed_by_matrix)
+        {
+            for(int i = 0; i < matrices.size(); i++){
+                comp_sched_json += "[";
+                for(int j = 0; j < depth; j++){
+                            for(int k = 0; k< depth; k++){
+                                
+                                comp_sched_json += "\"" + std::to_string(matrices.at(i).at(j).at(k))+"\"";
+                                if(!(j==depth-1 && k==depth-1)) comp_sched_json += ", ";
+                            }
+                }
+                comp_sched_json += "] ";
+                if(i!=matrices.size()-1) comp_sched_json += ", ";
+            }
+        }
+        
+        comp_sched_json += "],";
         // JSON for matrix
         comp_sched_json += "\"transformation_matrix\" : [";
         
@@ -547,7 +566,6 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                             if(!(i==matrix.size()-1 && j==matrix.size()-1)) comp_sched_json += ", ";
                         }
             }
-            
         }
         comp_sched_json += "]," ;
         // JSON for tiling
