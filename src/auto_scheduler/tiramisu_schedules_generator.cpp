@@ -1,5 +1,6 @@
 #include <tiramisu/auto_scheduler/schedules_generator.h>
 #include <tiramisu/auto_scheduler/evaluator.h>
+#include <random>
 
 namespace tiramisu::auto_scheduler
 {
@@ -316,6 +317,8 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                 this->matrices.push_back(matrix);
             }
         }
+    std::default_random_engine rand_generator;
+    std::shuffle(std::begin(this->matrices), std::end(this->matrices), rand_generator);
     return this->matrices;
 }
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)

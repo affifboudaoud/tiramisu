@@ -535,22 +535,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
         
         
         comp_sched_json += "],";
-        // JSON for initial constraint matrix
-        comp_sched_json += "\"initial_constraint_matrix\" : [";
-        std::vector<std::vector<int>> bounds_mat;
-        std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
-        
-        if (transformed_by_matrix)
-        {
-            for(int i = 0; i < constraint_matrix.size(); i++){
-                        for(int j = 0; j< constraint_matrix.at(i).size(); j++){
-                            comp_sched_json += "\"" + std::to_string(constraint_matrix.at(i).at(j))+"\"";
-                            if(!(i==constraint_matrix.size()-1 && j==constraint_matrix.at(i).size()-1)) comp_sched_json += ", ";
-                        }
-            }
-
-        }
-        comp_sched_json += "]," ;
+        // JSON for matrices
         // JSON for matrix
         comp_sched_json += "\"transformation_matrix\" : [";
         
@@ -563,21 +548,6 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                         }
             }
             
-        }
-        comp_sched_json += "]," ;
-
-        // JSON for resulting constraint matrix
-        comp_sched_json += "\"resulting_constraint_matrix\" : [";
-
-        if (transformed_by_matrix)
-        {
-            for(int i = 0; i < result_const_matrix.size(); i++){
-                        for(int j = 0; j< result_const_matrix.at(i).size(); j++){
-                            comp_sched_json += "\"" + std::to_string(result_const_matrix.at(i).at(j))+"\"";
-                            if(!(i==result_const_matrix.size()-1 && j==result_const_matrix.at(i).size()-1)) comp_sched_json += ", ";
-                        }
-            }
-
         }
         comp_sched_json += "]," ;
         // JSON for tiling
