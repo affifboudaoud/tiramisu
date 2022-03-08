@@ -125,7 +125,7 @@ void apply_optimizations_matrix(optimization_info const& optim_info)
             break;
         case optimization_type::UNROLLING:
             // Apply unrolling on the level indicated by l0
-            std::cout<<"optim info l0: "<<optim_info.l0<<std::endl;
+            
             if (optim_info.l0 != -1)
                 block.unroll(optim_info.l0, optim_info.l0_fact);
                 

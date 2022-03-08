@@ -6,14 +6,13 @@
 
 #include <stdexcept>
 #define TIME_LIMIT 1000
- 
-struct TimeLimitException : public std::exception
-    {
-        const char * what () const throw ()
+ struct UnrollingException : public std::exception {
+    const char * what () const throw ()
         {
-            return "passed timelimit while measuring the execution time";
+            return "unrolling error";
         }
-    };
+};
+
 namespace tiramisu::auto_scheduler
 {
  std::string get_name_ast_expr_isl( isl_ast_expr *expr);
@@ -224,7 +223,16 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 perror("fork failed");
                 exit(1);
             } else if (pid == 0) {
-                measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                try{
+                     measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                }
+                catch(UnrollingException e){
+                     // Remove all the optimizations
+                    exec_eval->fct->reset_schedules();
+                    measurements.clear();
+                    measurements.push_back(std::numeric_limits<float>::infinity());
+                    cont = 1;
+                }
                 int size =measurements.size();
                 float ar[measurements.size()];
                 for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);

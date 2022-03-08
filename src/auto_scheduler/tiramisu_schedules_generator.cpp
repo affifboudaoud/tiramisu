@@ -347,12 +347,12 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
 
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
 {
-    /*
-    std::vector<std::vector<int>> mat = {{1,0,0},{0,0,1},{0,1,0}};
+    
+    std::vector<std::vector<int>> mat = {{10,43,0},{3,13,0},{0,0,1}};
     this->matrices.push_back(mat);
     return this->matrices;
-    */
     
+    /*
     std::vector<ast_node*> shared_nodes;
     std::vector<tiramisu::computation*> involved_computations;
     // add interchange matrices
@@ -683,7 +683,7 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
         }
         
         return this->matrices;
-        
+        */
 }
 
 std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(syntax_tree const& ast, optimization_type optim)
