@@ -417,14 +417,6 @@ public:
      * The bounds of the transformed loops
      * **/
     std::vector<std::vector<int>> transformed_bounds_matrix;
-     /**
-     * The constraint matrix of the original loops
-     * **/
-    std::vector<std::vector<int>> constraint_matrix;
-     /**
-     * The constraint matrix of the transformed loops
-     * **/
-    std::vector<std::vector<int>> transformed_constraint_matrix;
     /**
      * @brief The map that correspand iterators names to isl iterator names
      * 

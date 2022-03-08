@@ -6062,7 +6062,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
 
         // Compute the depth before any scheduling.
         int original_depth = this->compute_maximal_AST_depth();
-       
+        std::cout<<"originale depth"<<original_depth<<std::endl;
         DEBUG(3, tiramisu::str_dump("Computing upper bound at loop level " + std::to_string(L0)));
         
         tiramisu::expr loop_upper_bound =

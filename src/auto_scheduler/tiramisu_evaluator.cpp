@@ -441,7 +441,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                         }
     std::vector < std::vector<int> > init_bounds_matrix;
     std::vector < std::vector<int> > result_const_matrix;
-    std::vector < std::vector<int> > constraint_matrix;
+    
     // Get information about the schedule
     for (optimization_info const& optim_info : ast.new_optims)
     {

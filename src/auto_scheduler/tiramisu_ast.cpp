@@ -1138,8 +1138,7 @@ namespace tiramisu::auto_scheduler
         new_ast.fct = fct;
         new_ast.bounds_matrix = bounds_matrix;
         new_ast.transformed_bounds_matrix = transformed_bounds_matrix;
-        new_ast.constraint_matrix = constraint_matrix;
-        new_ast.transformed_constraint_matrix = transformed_constraint_matrix;
+        
         new_ast.computations_list = computations_list;
         new_ast.buffers_list = buffers_list;
         new_ast.buffers_mapping = buffers_mapping;
