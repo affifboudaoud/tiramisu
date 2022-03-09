@@ -148,6 +148,7 @@ std::vector<float> evaluate_by_execution::get_measurements_matrix(syntax_tree& a
     fct->gen_time_space_domain();
     fct->gen_isl_ast();
     fct->gen_halide_stmt();
+    // if code generation is done, inform the parent process that is executing the get_measurements_matrix function
     kill(getppid(), SIGUSR1);
 
     Halide::Module m = lower_halide_pipeline(fct->get_name(), halide_target, halide_arguments,
@@ -395,18 +396,18 @@ void evaluate_by_learning_model::represent_computations_from_nodes(ast_node *nod
         represent_computations_from_nodes(child, computations_json, comp_absolute_order);
 }
 std::vector<std::vector<int>>  mat_mul(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2)
-        {
-        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
+{
+std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
 
-            for(std::size_t row = 0; row < result.size(); ++row) {
-                for(std::size_t col = 0; col < result.at(0).size(); ++col) {
-                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
-                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
-                    }
-                }
+    for(std::size_t row = 0; row < result.size(); ++row) {
+        for(std::size_t col = 0; col < result.at(0).size(); ++col) {
+            for(std::size_t inner = 0; inner < m2.size(); ++inner) {
+                result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
             }
-            return result;
         }
+    }
+    return result;
+}
         
 std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast)
 {
@@ -534,7 +535,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
         
         
         comp_sched_json += "],";
-        // JSON for matrices
+        // JSON for transformation matrices
         
         comp_sched_json += "\"transformation_matrices\" : [";
         
