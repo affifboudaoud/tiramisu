@@ -344,11 +344,40 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
     std::shuffle(std::begin(this->matrices), std::end(this->matrices), rand_generator);
     return this->matrices;
 }
+int gcd_extend(int a, int b,
+               int& x, int& y)
+{
+    // Base Case
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return a;
+    }
+ 
+    // Recursively find the gcd
+    else {
+        int g = gcd_extend(b,
+                           a % b, x, y);
+        int x1 = x, y1 = y;
+        x = y1;
+        y = x1 - (a / b) * y1;
+        return g;
+    }
+}
 
+// the given equations ax + by = c
+std::vector<int> get_equation_solution(int a, int b, int c)
+{
+    int x, y;
+    int gcd = gcd_extend(a, b, x, y);
+    std::vector<int> result = {x * (c / gcd), y * (c / gcd)};
+    return result;
+}
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
 {
     
-    
+    this->matrices.clear();
+
     std::vector<ast_node*> shared_nodes;
     std::vector<tiramisu::computation*> involved_computations;
     // add interchange matrices
@@ -412,6 +441,7 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
         this->matrices.push_back(matrix);
     }
     
+    
     // add skewing matrices
     shared_nodes.clear();
     involved_computations.clear();
@@ -471,14 +501,19 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                     }
                     matrix.at(l0).at(l1) = l1_fact;
                     matrix.at(l0).at(l0) = l0_fact;
-                    if(l0_fact==3 && l1_fact==2){
-                        matrix.at(l0+1).at(l0) = 1;
-                    }
-                    if(l0_fact!=1 && l1_fact==1){
-                        matrix.at(l0+1).at(l0) = l0_fact-1;
-                    }
-                    this->matrices.push_back(matrix);
                     
+                    
+                    
+                    if(l0_fact!=1){
+                        std::vector<int> solutions=get_equation_solution(l0_fact, -l1_fact,1);
+                        
+                        matrix.at(l1).at(l1) =  solutions.at(0);
+                        matrix.at(l0+1).at(l1-1) =  solutions.at(1);
+                    }
+                    
+                
+                    
+                    this->matrices.push_back(matrix);
                 }
                 ast.stage_isl_states();
             }
@@ -511,12 +546,18 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                     }
                     matrix.at(l0).at(l1) = l1_fact;
                     matrix.at(l0).at(l0) = l0_fact;
-                    if(l0_fact==3 && l1_fact==2){
-                        matrix.at(l0+1).at(l0) = 1;
+                    
+                    
+                    
+                    
+                    if(l0_fact!=1){
+                        std::vector<int> solutions=get_equation_solution(l0_fact, -l1_fact,1);
+                        matrix.at(l1).at(l1) =  solutions.at(0);
+                        matrix.at(l0+1).at(l1-1) =  solutions.at(1);
                     }
-                    if(l0_fact!=1 && l1_fact==1){
-                        matrix.at(l0+1).at(l0) = l0_fact-1;
-                    }
+                    
+                    
+                    
                     this->matrices.push_back(matrix);
                 }
                 ast.stage_isl_states();
@@ -560,12 +601,18 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
                     }
                     matrix.at(l0).at(l1) = l1_fact;
                     matrix.at(l0).at(l0) = l0_fact;
-                    if(l0_fact==3 && l1_fact==2){
-                        matrix.at(l0+1).at(l0) = 1;
+                    
+                    
+                    
+                    if(l0_fact!=1){
+                        std::vector<int> solutions=get_equation_solution(l0_fact, -l1_fact,1);
+                        
+                        matrix.at(l1).at(l1) =  solutions.at(0);
+                        matrix.at(l0+1).at(l1-1) =  solutions.at(1);
                     }
-                    if(l0_fact!=1 && l1_fact==1){
-                        matrix.at(l0+1).at(l0) = l0_fact-1;
-                    }
+                    
+                    
+                    
                     this->matrices.push_back(matrix);
                 }
                 ast.stage_isl_states();
@@ -574,7 +621,8 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
 
         }
     }
-
+    
+    
     ast.recover_isl_states();
     // boolean for adding random skew patterns
     bool add_3d_skew=true;
@@ -608,10 +656,12 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
             if (l0_fact==0) l0_fact++;
             matrix.at(l0).at(l1) = l0_fact;
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"check ing"<<l0_fact<<std::endl;i--;};
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;};
         }
     }
     // second skewing pattern
+    
+    
     if(add_random_skew){
         for(int i=0;i<rand_skew;i++){
             std::vector <  std::vector<int> >  matrix(depth);
@@ -633,11 +683,13 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
             if (l0_fact==0) l0_fact++;
             matrix.at(l1).at(l0) = l0_fact;
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"checking"<<l0_fact<<std::endl;i--;}
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
     }
     bool saw_zero = false;
     int cpt = 0;
+    
+    
     if(add_3d_skew){
         for(int i=0;i<d3_skew;i++){
             saw_zero = false;
@@ -698,6 +750,7 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
     return this->matrices;
         
 }
+
 
 std::vector<syntax_tree*> ml_model_schedules_generator::generate_schedules(syntax_tree const& ast, optimization_type optim)
 {

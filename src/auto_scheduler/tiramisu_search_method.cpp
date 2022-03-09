@@ -122,7 +122,7 @@ void beam_search::search(syntax_tree& ast)
     }
 }
 
-  int timeout = 0;
+int timeout = 0;
 int child_done = 0;
 int cont = 0;
   void child_handler(int sig)
@@ -142,7 +142,7 @@ void sig_usr(int signo){
 
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    
+    return;
     std::default_random_engine rand_generator;
     
     
@@ -614,7 +614,7 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
     return isl_ast_bound_mat;
 }
 // list of matrices to explore at each level of the exploration tree
-std::vector <std::vector < std::vector<int> >> matrices;
+//std::vector <std::vector < std::vector<int> >> matrices;
 // list of hashes of matrices we explored before to avoid repeating schedules 
 std::vector<std::size_t> hashes;
 
@@ -640,8 +640,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // hash the parent 
     std::size_t parent_hash=hasher(ast.get_schedule_str());
     // generate the matrices to be explored at this level
-    matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
-
+    std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
+    
     // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
 
@@ -673,9 +673,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
    
     
     std::vector<std::vector<std::vector<int>>> repeated;
-    // Add the corr_map to the ast structue
-    //corr_map = get_corr_map_from_isl(ast);
-    //Hash the program string to get a unique seed for each program 
+     
     
     
     // number of matrices explored so far at this level. used to go through the matrices global variable
@@ -719,6 +717,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 // print deleted Ast
                 child->print_previous_optims();
                 std::cout << "\n-----------" << std::endl;
+                std::cout<<ast.get_schedule_str()<<std::endl;
                 child->print_new_optims();
                 
                 child->print_ast();
@@ -766,6 +765,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 child->print_previous_optims();
                 std::cout << "\n-----------" << std::endl;
+                std::cout<<ast.get_schedule_str()<<std::endl;
                 child->print_new_optims();
                 //std::cout<<child->get_schedule_str()<<std::endl;
                 child->print_ast();
