@@ -647,10 +647,6 @@ public:
      * Check the correctness of the list of applied structurel optimizations
     */
     bool ast_is_legal() const;
-    /**
-     * Check the correctness of the list of applied structurel optimizations on a program with checking the increment
-    */
-    bool program_is_legal(syntax_tree &ast_i) const;
 
     /**
      * Encodes the transformations applied to the ast as a string, this is used for saving the exploration trace while

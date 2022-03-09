@@ -6,10 +6,12 @@
 
 #include <stdexcept>
 #define TIME_LIMIT 1000
- struct UnrollingException : public std::exception {
+
+// exception for Unrolling when scheduled program has an IF statement
+struct UnrollingException : public std::exception {
     const char * what () const throw ()
         {
-            return "unrolling error";
+            return "unrolling error : unrolled loop level is a user node due to dimension error";
         }
 };
 
@@ -229,9 +231,8 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 try{
                      measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
                 }
-                catch(UnrollingException e){
-                    // if an illegal unrolling is detected we put inf as a measurement so that this node is not taken into considiration
-                    // remove all the optimizations
+                catch(UnrollingException e){ 
+                     // Remove all the optimizations
                     exec_eval->fct->reset_schedules();
                     measurements.clear();
                     measurements.push_back(std::numeric_limits<float>::infinity());
@@ -454,9 +455,10 @@ std::vector <  std::vector<int> > get_identity(int depth){
         return matrix;
 }
 
-
-// Get the values of the isl AST
-int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map )
+/**
+ * get the values of the arguments when the node is an op node 
+ */
+int print_arguments_string( isl_ast_op_type prev_op, isl_ast_expr *expr, std::vector<std::vector<int>> isl_ast_map)
 {
     int i, n, p = 0;
 
@@ -465,47 +467,44 @@ int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vecto
     if (n < 0) return 0;
     if (n == 0) return 0;
     p = 0;
+    // going through all arguments of the op_node
     for (i = 0; i < n; ++i) {
         isl_ast_expr *arg;
-        //std::cout<<"---------------Arg";
-        //std::cout<<i;
-        //std::cout<<"\n";
         arg = isl_ast_expr_get_op_arg(expr, i);
-        if(i==0){
+        // for unary operations 
+        if(i == 0){
             p = get_value(arg,isl_ast_map);
-            if (prev_op == isl_ast_op_minus){p = -get_value(arg,isl_ast_map);break;}
+            if (prev_op == isl_ast_op_minus){p = - get_value(arg,isl_ast_map); break;}
         }
+        // for binary operations
         else{
             switch(prev_op){
-                case isl_ast_op_add:{p = p+get_value(arg,isl_ast_map);break;}
-                case isl_ast_op_sub:{p = p-get_value(arg,isl_ast_map);break;}
-                case isl_ast_op_mul:{p = p*get_value(arg,isl_ast_map);break;}
-                case isl_ast_op_div:{if(get_value(arg,isl_ast_map)!= 0)p = p / get_value(arg,isl_ast_map);break;}
-                case isl_ast_op_max:{p = std::max(p,get_value(arg,isl_ast_map));break;}
-                case isl_ast_op_min:{p = std::min(p,get_value(arg,isl_ast_map));break;}
-                case isl_ast_op_minus:{p = -get_value(arg,isl_ast_map);break;}
-                default: p = get_value(arg,isl_ast_map);break;;
+                case isl_ast_op_add:{p = p + get_value(arg,isl_ast_map); break;}
+                case isl_ast_op_sub:{p = p - get_value(arg,isl_ast_map); break;}
+                case isl_ast_op_mul:{p = p * get_value(arg,isl_ast_map); break;}
+                case isl_ast_op_div:{if(get_value(arg,isl_ast_map)!= 0) p = p / get_value(arg,isl_ast_map); break;}
+                case isl_ast_op_max:{p = std::max(p,get_value(arg,isl_ast_map)); break;}
+                case isl_ast_op_min:{p = std::min(p,get_value(arg,isl_ast_map)); break;}
+                case isl_ast_op_minus:{p = -get_value(arg,isl_ast_map); break;}
+                default: p = get_value(arg,isl_ast_map); break;;
             }
         }
         isl_ast_expr_free(arg);
     }
     return p;
 }
-// get the Upper bound of an id
-int get_id_value(std::string id,std::vector<std::vector<int>>isl_ast_map)
+/**
+ get an estimation of value of a variable in the expression of a bound 
+*/
+int get_id_value(std::string id, std::vector<std::vector<int>>isl_ast_map)
 {
-    std::map <int,  std::tuple<std::string , std::string,std::string> >::iterator it;
-    /*
-    for (it = isl_ast_map.begin(); it != isl_ast_map.end(); it++)
-    {
-        if(std::get<2>(it->second) == id){
-            return (std::stoi(std::get<0>(it->second)) + std::stoi(std::get<1>(it->second))) / 2;
-        }
-    }
-    */
+    // to estimate bounds that have variables in it, return an estimation of these variables (the mean of the values of the bounds for example)
+    // in the case of only conestant bound, this function is not used
     return 0;
 }
-
+/**
+ * get the numerical value of the expression 
+ */
 int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map){
 
     enum isl_ast_expr_type type;
@@ -524,24 +523,15 @@ int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map){
                 op = isl_ast_expr_get_op_type(expr);
                 if (op == isl_ast_op_error) return 0;
                 val=val+print_arguments_string(op,expr,isl_ast_map);
-                //std::cout<<"Entreing OP : ";
-                //std::cout<<op;
-                //std::cout<<"\n";
                 break;
             case isl_ast_expr_id:
                 id = isl_ast_expr_get_id(expr);
                 p = isl_id_get_name(id);
                 val = get_id_value(p,isl_ast_map);
-                //std::cout<<"Entreing Id with";
-                //std::cout<<val;
-                //std::cout<<"\n";
                 break;
             case isl_ast_expr_int:
                 v = isl_ast_expr_get_val(expr);val=1;
                 val= isl_val_get_num_si(v);
-                //std::cout<<"Entreing Int with";
-                //std::cout<<val;
-                //std::cout<<"\n";
                 break;
             default: return 0;
             }
@@ -549,6 +539,9 @@ int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map){
     }
 }
 
+/**
+ * get the bound from an isl expression as a string      
+ */
 std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map,bool is_bound)
 {
     enum isl_ast_expr_type type;
@@ -565,10 +558,7 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
             case isl_ast_expr_op:
                 op = isl_ast_expr_get_op_type(expr);
                 if (op == isl_ast_op_error) return "$Error in the operation type";
-                p = std::to_string(print_arguments_string(op,expr,isl_ast_map));
-                //std::cout<<"Entreing OP with ";
-                //std::cout<<op;
-                //std::cout<<"\n";
+                p = std::to_string( print_arguments_string( op, expr, isl_ast_map));
                 break;
             case isl_ast_expr_id:
                 if(!is_bound){
@@ -578,58 +568,50 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
                 else{
                     id = isl_ast_expr_get_id(expr);
                     p = isl_id_get_name(id);
-                    p=std::to_string(  get_id_value(isl_id_get_name(id),isl_ast_map));
+                    p=std::to_string( get_id_value( isl_id_get_name( id ), isl_ast_map ));
                 }
-
-                //std::cout<<"Entreing Id with ";
-                //std::cout<<p;
-                //std::cout<<"\n";
                 break;
             case isl_ast_expr_int:
                 v = isl_ast_expr_get_val(expr);
                 p = std::to_string(isl_val_get_num_si(v));
-                //std::cout<<"Entreing Int with";
-                //std::cout<<p;
-                //std::cout<<"\n";
                 break;
             default: return "%";
         }
     return p;
     }
 }
-    
+ /**
+    get the loop bounds from the isl ast (uses code gen)
+  */
  std::vector<std::vector<int>> get_ast_isl_bound_matrice(syntax_tree& ast){
 
-        std::vector<std::vector<int>> isl_ast_mat;
-        std::vector<int>p1;
-        isl_ast_expr * init_expr;
-        isl_ast_expr * cond_expr;
-        
-        int stop = 0;
+    std::vector<std::vector<int>> isl_ast_bound_mat;
+    std::vector<int> p1;
+    isl_ast_expr * init_expr;
+    isl_ast_expr * cond_expr;
+    
+    int stop = 0;
+    // get the starting node of the new isl ast
+    ast.fct->gen_isl_ast();
+    isl_ast_node *ast_i = ast.fct->get_isl_ast();
 
-        ast.fct->gen_isl_ast();
-
-        isl_ast_node *ast_i = ast.fct->get_isl_ast();
-        while(stop!=1)
+    while(stop != 1)
+    {
+        if(isl_ast_node_get_type(ast_i) == isl_ast_node_for)
         {
+            init_expr = isl_ast_node_for_get_init(ast_i); //Lower bound
+            cond_expr = isl_ast_node_for_get_cond(ast_i); //Upper bound
+            
+            p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_bound_mat,true)));
+            p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_bound_mat,true)));
+            isl_ast_bound_mat.push_back(p1);
 
-            if(isl_ast_node_get_type(ast_i) == isl_ast_node_for)
-            {
-                init_expr=isl_ast_node_for_get_init(ast_i); //Lower bound
-                cond_expr=isl_ast_node_for_get_cond(ast_i); //Upper bound
-                
-
-                p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_mat,true)));
-                p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_mat,true)));
-                isl_ast_mat.push_back(p1);
-                p1.clear();
-                ast_i= isl_ast_node_for_get_body(ast_i);
-            }
-            else{stop=1;}
+            p1.clear();
+            ast_i = isl_ast_node_for_get_body(ast_i);
         }
-        
-     
-        return isl_ast_mat;
+        else{stop = 1;}
+    }   
+    return isl_ast_bound_mat;
 }
 // list of matrices to explore at each level of the exploration tree
 std::vector <std::vector < std::vector<int> >> matrices;
@@ -685,11 +667,10 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     auto iterator = children.begin();
     
 
-    
+    // Getting the initial loop bounds 
     std::vector<std::vector<int>> bounds_mat;
-    
     bounds_mat = get_ast_isl_bound_matrice(ast);
-    
+   
     
     std::vector<std::vector<std::vector<int>>> repeated;
     // Add the corr_map to the ast structue
