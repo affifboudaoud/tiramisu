@@ -125,10 +125,8 @@ void apply_optimizations_matrix(optimization_info const& optim_info)
             break;
         case optimization_type::UNROLLING:
             // Apply unrolling on the level indicated by l0
-            
             if (optim_info.l0 != -1)
-                block.unroll(optim_info.l0, optim_info.l0_fact);
-                
+                block.unroll(optim_info.l0, optim_info.l0_fact);          
             // Apply unrolling on all innermost levels
             else
                 unroll_innermost_levels(optim_info.comps, optim_info.l0_fact);
