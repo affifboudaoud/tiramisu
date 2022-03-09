@@ -18,6 +18,7 @@ namespace tiramisu::auto_scheduler
  std::string get_name_ast_expr_isl( isl_ast_expr *expr);
   std::string get_expr_isl_string( isl_ast_expr *expr, bool is_bound);
  int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map );
+
 void beam_search::search(syntax_tree& ast)
 {
     if (ast.nb_explored_optims % NB_OPTIMIZATIONS == 0)
@@ -135,15 +136,14 @@ void sig_usr(int signo){
     cont = 1; 
     
 }
-bool changes_mes = false;
+
+
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    //std::cout<<"starting search save"<<std::endl;
-    //return;
+    
     std::default_random_engine rand_generator;
     
-    //if (ast.nb_explored_optims % NB_OPTIMIZATIONS == 0)
-    //    ast.clear_new_optimizations();
+    
 
     std::vector<syntax_tree*> children;
 
@@ -215,7 +215,8 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
             cont = false;
             std::vector<float> measurements;
             
-            
+            // create a child process to execute the code and get measurements
+            // this is added so that we can limit the code generation time for large programs
             pid_t pid;
             pid = fork();
 
@@ -223,11 +224,14 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 perror("fork failed");
                 exit(1);
             } else if (pid == 0) {
+                // put get_measurements in a try block in the case of erroneous unrolling
+                // this should be added to ast_is_legal but for now it can only be detected at apply_optimization level
                 try{
                      measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
                 }
                 catch(UnrollingException e){
-                     // Remove all the optimizations
+                    // if an illegal unrolling is detected we put inf as a measurement so that this node is not taken into considiration
+                    // remove all the optimizations
                     exec_eval->fct->reset_schedules();
                     measurements.clear();
                     measurements.push_back(std::numeric_limits<float>::infinity());
@@ -235,48 +239,55 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 }
                 int size =measurements.size();
                 float ar[measurements.size()];
+                // put the measurements in an array to be sent to the parent process
                 for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
                 close(fd[0]);
+                // send number of measurements to parent process
                 write(fd[1], &size, sizeof(size));
-                
+                // send measurements to parent process
                 write(fd[1], &ar, sizeof(ar));
-                
+                // close the pipe
                 close(fd[1]);
+                // end child process
                 _exit(1);
             }
 
             // set up the signal handlers after forking so the child doesn't inherit them
-
+            // an alarm in the case of the timelimit is reached and the child process was interrupted
             signal(SIGALRM, alarm_handler);
+            // an alarm in the case of the child process ending ie. both data generation and evaluation are done
             signal(SIGCHLD, child_handler);
+            // an alarm in the case of the data generation ending before the timelimit. We still need to wait for the evaluation to be done. 
             signal(SIGUSR1,sig_usr);
-              // install an alarm to be fired after TIME_LIMIT
+            // install an alarm to be fired after TIME_LIMIT
             
+            // set the alarm
             alarm(TIME_LIMIT);
             
             pause();
 
             if (timeout) {
                 
-                    
+                // if the timeout has been reached    
                 int result = waitpid(pid, NULL, WNOHANG);
                 if (result == 0) {
                     // child still running, so kill it
                     
-                    
-                    // Remove all the optimizations
+                    // remove all the optimizations
                     exec_eval->fct->reset_schedules();
                     measurements.clear();
+                    // if the timeout has been reached, put infinity as a measurement
                     measurements.push_back(std::numeric_limits<float>::infinity());
                     // cancel any previously set alarm 
                     alarm(0); 
+                    // kill child process
                     kill(pid, 9);
-                    //kill(pid, SIGKILL);
                     
                 
                     waitpid(-1,NULL,0);
                 } else {
-                    
+                    // if by the time we detect that the alarm has been raised, the evaluation has been completed
+                    // we recieve the measurements from the child 
                     int size = 0;
                     close(fd[1]);
                     read(fd[0], &size, sizeof(int));
@@ -286,10 +297,10 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                     close(fd[0]);
                     
                 }
-                
-                
+                   
             }else if (child_done) {
-                
+                // the execution of the child is done, both code generation and evaluation
+                // we recieve the measurements from the child
                 int size =0;
                 close(fd[1]);
                 read(fd[0], &size, sizeof(int));
@@ -299,12 +310,14 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 close(fd[0]);
                 
                 waitpid(-1,NULL,0);
-            }else if(cont){ 
+            }else if(cont){
+                // execution is not done but the code generation is done. This happens for large programs that take a long time to execute
+                // cancel the timeout alarm 
                 alarm(0);
                 int size=0;
-                
+                // we wait for the evalution of the generated code
                 while(!child_done){}
-                
+                // after evealuation is done, we recieve the measurements from the child
                 close(fd[1]);
                 read(fd[0], &size, sizeof(int));
                 float ar[size];
@@ -388,237 +401,23 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
         search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
     }
 }
-int determinant( std::vector <  std::vector<int> >  matrix, int n) {
-   int det = 0;
-   int o;
-   if(n==1) return matrix.at(0).at(0);
-   std::vector <  std::vector<int> >  submatrix(n);
-   for(o = 0; o<n; o++){
-                submatrix.at(o)= std::vector<int> (n);}
-   if (n == 2)
-   return ((matrix.at(0).at(0) * matrix.at(1).at(1)) - (matrix.at(1).at(0) * matrix.at(0).at(1)));
-   else {
-      for (int x = 0; x < n; x++) {
-         int subi = 0;
-         for (int i = 1; i < n; i++) {
-            int subj = 0;
-            for (int j = 0; j < n; j++) {
-               if (j == x)
-               continue;
-               submatrix.at(subi).at(subj) = matrix.at(i).at(j);
-               subj++;
-            }
-            subi++;
-         }
-         det = det + (pow(-1, x) * matrix.at(0).at(x) * determinant( submatrix, n - 1 ));
-      }
-   }
-   return det;
-}
-
-
-std::vector < std::vector < std::vector<int> > > beam_search::get_random_matrcies(int nb_out_matrcies, int depth)
+/*
+multiply two matrices AxB
+*/
+std::vector<std::vector<int>>  multiply(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2)
 {
-    std::vector <std::vector <  std::vector<int> >>  result(nb_out_matrcies);
-    int nb_valid_matrices = 0;
-    int max_depth = 6;
-    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
-    srand((unsigned) time(0));
-    while(nb_valid_matrices<nb_out_matrcies)
-    {
-        std::vector <  std::vector<int> >  random(depth);
-        bool valid = false;
-        while (!valid)
-        {   
-            //std::cout << "generating";
-            int l, c;
-            std::vector <  std::vector<int> >  randomL(depth);
-            for(l = 0; l<depth; l++){
-                randomL.at(l)= std::vector<int>(depth);
-                for(c = 0; c<depth; c++){
-                                if (l>c){
-                                    randomL.at(l).at(c) = (rand() %10) - 5;
-                                }else{
-                                    randomL.at(l).at(c) = 0;
-                                }
-                }
+std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
+
+    for(std::size_t row = 0; row < result.size(); ++row) {
+        for(std::size_t col = 0; col < result.at(0).size(); ++col) {
+            for(std::size_t inner = 0; inner < m2.size(); ++inner) {
+                result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
             }
-             
-            std::vector <  std::vector<int> >  randomU(depth);
-            for(l = 0; l<depth; l++){
-                randomU.at(l)= std::vector<int>(depth);
-                for(c = 0; c<depth; c++){
-                            if (l<c){
-                                randomU.at(l).at(c) = (rand() % 10) - 5;
-                            }else{
-                                randomU.at(l).at(c) = 0;
-                            }
-                }
-            }
-            for(l = 0; l<depth; l++){
-                randomL.at(l).at(l) =1;
-                randomU.at(l).at(l) =1;
-                int sum=0,j=0;
-                if(l<depth-1){
-                    sum=0;
-                    for(j=0;j<l;j++){
-                        sum+= randomL.at(l).at(j) * randomU.at(j).at(depth-1);
-                    }
-                    randomU.at(l).at(depth-1) = (1-sum)/randomL.at(l).at(l);
-                }else{
-                    sum=0;
-                    for(j=1;j<l+1;j++){
-                        sum+= randomL.at(l).at(j) * randomU.at(j).at(depth-1);
-                    }
-                    randomL.at(depth-1).at(0) = (1-sum)/randomU.at(0).at(depth-1);
-                }
-            }
-            int k;
-            for(l = 0; l < depth; ++l){
-                random.at(l)= std::vector<int>(depth);
-                for(c = 0; c < depth; ++c)
-                    {
-                        for(k = 0; k < depth; ++k)
-                        {
-                            random.at(l).at(c)+= randomL.at(l).at(k) * randomU.at(k).at(c);
-                        }
-                    }
-            }
-            // Reduce elements into [-7, 7] values
-            int mx = 7;
-            int m = -1000;
-            int x,y;
-            for(int i = 0; i < depth; i++){
-                        for(int j = 0; j< depth; j++){
-                            if(m < std::abs(random.at(i).at(j)))
-                            {
-                                m = random.at(i).at(j);
-                                x = i;
-                                y = j;
-                            }
-                        }
-            }
-            int mm=-8;
-            int useless = 0;
-            
-            bool bad_case;
-            int f = -1;
-            // Check determinant equals 1
-            //std::cout<<"Before \n"<< determinant(random, depth)<<std::endl;
-            while(m>=mx && useless<= depth*depth){
-                    bad_case=0;
-                    for(int i = 0; i < depth; i++){
-                        if (i==x) continue;
-                        if(random.at(i).at(y)!=0)
-                            {
-                                f = i;
-                                break;
-                            }
-                        if(i==depth-1) bad_case=1;
-                    }
-                    //std::cout<<"First \n"<<std::endl;
-                    if(bad_case) break;
-                    int s =1;
-                    //std::cout<<f<<" Second \n"<<y<<std::endl;
-                    if (m*random.at(f).at(y)<0) s=s*-1;
-                    
-                    for(int j = 0; j < depth; j++){
-                            
-                            random.at(x).at(j) = random.at(x).at(j) - s * random.at(f).at(j);
-                    }
-                    //std::cout<<"Second \n"<<std::endl;
-                    mm=-10000;
-                    for(int i = 0; i < depth; i++){
-                        for(int j = 0; j< depth; j++){
-                            if(mm < std::abs(random.at(i).at(j)))
-                            {
-                                mm = random.at(i).at(j);
-                                x = i;
-                                y = j;
-                            }
-                        }
-                    }
-                    //std::cout<<"Third \n"<<std::endl;
-                    if(m>=mm) useless++;
-                    m=mm;
-            }
-            // Check determinant equals 1
-            int det = determinant(random, depth);
-            bool det_bool = det==1 && !bad_case && (useless <= depth*depth) ;
-            //std::cout<< "After \n"<<det_bool<<std::endl;
-            // Check upper right determinants equal 1
-            bool all_1 = true;
-            if (det_bool){
-                //std::cout << depth;
-                int d=0,s=0;
-                
-                for (k=depth-1;k>0;k--){
-                        //std::cout<<" sub matrix at depth: " <<k <<"\n";
-                        std::vector <  std::vector<int> >  submatrixd(depth-k);
-                        
-                        for (s=0;s<depth-k;s++){
-                                    submatrixd.at(s) = std::vector<int> (depth-k);
-                                    for (d=0;d<depth-k;d++){
-                                            
-                                            submatrixd.at(s).at(d) = random.at(s).at(k+d); 
-                                    } 
-                        }  
-                        
-                        if(determinant(submatrixd, depth-k)!=1){ 
-                            all_1 = false;
-                            /*std::cout<< "failed at size: "<< depth-k<<"with determinant being:"<< determinant(submatrixd, depth-k) <<"\n";
-                            for (s=0;s<depth-k;s++){
-                                for (d=0;d<depth-k;d++){
-                                            std::cout<< submatrixd.at(s).at(d) <<"\n";
-                                    }
-                            }*/
-                        }
-                        if(!all_1) break;
-                }
-            } 
-            valid = det_bool && all_1 ;
         }
-    //std::cout<< "got one done \n"<<std::endl;
-    /*std::cout<< "starts \n";
-    for(int i = 0; i < depth; i++){
-                        for(int j = 0; j< depth; j++){
-                                std::cout<<random.at(i).at(j)<<"\n"<<std::endl;
-                             
-                        }
-            }
-    std::cout<< "end \n";*/
-    result.at(nb_valid_matrices) = random;
-    nb_valid_matrices++;
     }
     return result;
 }
-std::vector<std::vector<int>>  multiply(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2)
-        {
-        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()));
 
-            for(std::size_t row = 0; row < result.size(); ++row) {
-                for(std::size_t col = 0; col < result.at(0).size(); ++col) {
-                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
-                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
-                    }
-                }
-            }
-            return result;
-        }
-std::vector<std::vector<int>>  multiply_plus(const std::vector<std::vector<int>> & m1, const std::vector<std::vector<int>> & m2,const std::vector<std::vector<int>>  last_col)
-        {
-        std::vector<std::vector<int>> result(m1.size(), std::vector<int>(m2.at(0).size()+1));
-
-            for(std::size_t row = 0; row < result.size(); ++row) {
-                for(std::size_t col = 0; col < result.at(0).size()-1; ++col) {
-                    for(std::size_t inner = 0; inner < m2.size(); ++inner) {
-                        result.at(row).at(col) += m1.at(row).at(inner) * m2.at(inner).at(col);
-                    }
-                }
-                result.at(row).at(result.at(0).size()-1)= last_col[row][last_col.at(0).size()-1];
-            }
-            return result;
-        }
 
 /*
 check if a matrix is the identity matrix
@@ -654,383 +453,150 @@ std::vector <  std::vector<int> > get_identity(int depth){
         }
         return matrix;
 }
-/*
-Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
-*/
-  std::vector < std::vector<int> >  get_neighbor_matrix_random_element(std::vector < std::vector<int> >matrix ,int depth)
+
+
+// Get the values of the isl AST
+int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map )
 {
-    //std::cout<<"stratred random"<<std::endl;
-    std::vector < std::vector<int> > result(depth);
-    for(int l = 0; l<depth; l++){
-            result.at(l) = std::vector<int>(depth);
-            for(int c = 0; c<depth; c++){
-                            result.at(l).at(c) = matrix.at(l).at(c);
-            }
+    int i, n, p = 0;
+
+    n = isl_ast_expr_get_op_n_arg(expr);
+
+    if (n < 0) return 0;
+    if (n == 0) return 0;
+    p = 0;
+    for (i = 0; i < n; ++i) {
+        isl_ast_expr *arg;
+        //std::cout<<"---------------Arg";
+        //std::cout<<i;
+        //std::cout<<"\n";
+        arg = isl_ast_expr_get_op_arg(expr, i);
+        if(i==0){
+            p = get_value(arg,isl_ast_map);
+            if (prev_op == isl_ast_op_minus){p = -get_value(arg,isl_ast_map);break;}
         }
-       
-    
-    int m = 0;
-    int x =-1,y=-1;
-    
-    
-    int mm=-8;
-    int useless = 0;
-    
-    bool bad_case=0;
-    int f = -1;
-    while(useless<= depth*depth){
-            x = rand()%depth;
-            y = rand()%depth;
-            m = result.at(x).at(y);
-            bad_case=0;
-            for(int i = 0; i < depth; i++){
-                if (i==x) continue;
-                if(result.at(i).at(y)!=0)
-                {
-                        f = i;
-                        break;
-                }
-                if(i==depth-1) bad_case=1;
-            }
-            
-            if(bad_case || f==-1) {
-                useless++;
-                continue;
-            }
-            
-            int s =1;
-            if (m*result.at(f).at(y)<0) s=s*-1;
-            
-            for(int j = 0; j < depth; j++){
-                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
-            }
-            
-            mm = matrix.at(x).at(y);
-            
-            if(m!=mm){return result;}else{continue;} 
-            }
-    if (useless>= depth*depth) std::cout<<"useless"<<std::endl;
-    x = rand()%depth;
-    y = rand()%depth;
-    result.at(x).at(y)=result.at(x).at(y)-(rand()%2 -1);
-    return result;
-    
-}
-/*
-Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
-*/
-  std::vector < std::vector<int> >  get_neighbor_matrix(std::vector < std::vector<int> >matrix ,int depth)
-{
-    std::vector < std::vector<int> > result(depth);
-    for(int l = 0; l<depth; l++){
-            result.at(l) = std::vector<int>(depth);
-            for(int c = 0; c<depth; c++){
-                            result.at(l).at(c) = matrix.at(l).at(c);
-            }
-        }
-       
-    
-    int m = 0;
-    int x =-1,y=-1;
-    for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                        std::cout<<result.at(i).at(j);
-                }
-                std::cout<<std::endl;
-    }
-    for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                    if(std::abs(m) < std::abs(result.at(i).at(j)))
-                    {
-                        m = result.at(i).at(j);
-                        //std::cout<<"biggest elemnt in the matrix iside: "<<m<<std::endl;
-                        x = i;
-                        y = j;
-                    }
-                }
-    }
-    //std::cout << "X: "<<x<<"y: "<<y<<"m:"<<m<<std::endl;
-    //std::cout<<"biggest elemnt in the matrix is: "<<m<<std::endl;
-    int mm=-8;
-    int useless = 0;
-    
-    bool bad_case=0;
-    int f = -1;
-    
-    while(useless<= depth*depth){
-            bad_case=0;
-            for(int i = 0; i < depth; i++){
-                if (i==x) continue;
-                if(result.at(i).at(y)!=0)
-                {
-                        f = i;
-                        break;
-                }
-                if(i==depth-1) bad_case=1;
-            }
-            
-            if(bad_case) break;
-            int s =1;
-            //std::cout<<"x: "<<x <<std::endl;
-            //std::cout<<"f: "<<f <<std::endl;
-            //std::cout<<"y: "<<y <<std::endl;
-            if (m*result.at(f).at(y)<0) s=s*-1;
-            
-            for(int j = 0; j < depth; j++){
-                    
-                   result.at(x).at(j) = result.at(x).at(j) - s * result.at(f).at(j);
-            }
-            
-            mm =0;
-            int new_x=-1, new_y=-1;
-            for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                    if(std::abs(mm) < std::abs(result.at(i).at(j)))
-                    {
-                        mm = result.at(i).at(j);
-                        new_x = i;
-                        new_y = j;
-                    }
-                }
-            }
-            //std::cout << "new X: "<<new_x<<"new y: "<<new_y<<"mm:"<<mm<<std::endl;
-            for(int i = 0; i < depth; i++){
-                for(int j = 0; j< depth; j++){
-                        std::cout<<result.at(i).at(j);
-                }
-                std::cout<<std::endl;
-    }
-            if(!(x== new_x && y==new_y && m==mm)){return result;}else{return get_neighbor_matrix_random_element(matrix, depth);} 
-            m=mm;
-            x = new_x;
-            y = new_y;
-            }
-    if(bad_case) return get_neighbor_matrix_random_element(matrix, depth);
-    return result;
-    
-}
-/*
-Generate one random matrix that verifies the conditions of: 1- determinant is one 2- all of the upper left determinants are 1
-*/
-  std::vector < std::vector<int> >  beam_search::get_random_matrix(int depth)
-{
-    int max_depth = 6;
-    if (depth>max_depth) std::cout << "WARNING: the depth of this program is too big. Matrix generation will take a long time \n"<< std::endl;
-    std::vector <  std::vector<int> >  random(depth);
-    bool valid = false;
-    while (!valid)
-    {   
-
-        //generate a lower traiangular matrix
-        int l, c;
-        int choice = rand() %100;
-        std::vector <  std::vector<int> >  randomL(depth);
-        for(l = 0; l<depth; l++){
-            randomL.at(l)= std::vector<int>(depth);
-            for(c = 0; c<depth; c++){
-                            if (l>c){
-                                randomL.at(l).at(c) = (rand() %14) - 7;
-                            }else{
-                                if(l<c){
-                                    randomL.at(l).at(c) = 0;
-                                }else{
-                                    randomL.at(l).at(c)=1;
-                                }
-                            }
-            }
-        }
-
-        if(choice>3 && choice< 5 && !is_identity(randomL))  return randomL;
-        ////generate an upper traiangular matrix
-        std::vector <  std::vector<int> >  randomU(depth);
-        for(l = 0; l<depth; l++){
-            randomU.at(l)= std::vector<int>(depth);
-            for(c = 0; c<depth; c++){
-                        if (l<c){
-                            randomU.at(l).at(c) = (rand() % 14) - 7;
-                        }else{
-                            if(l>c){
-                                    randomU.at(l).at(c) = 0;
-                                }else{
-                                    randomU.at(l).at(c)=1;
-                                }
-                        }
-            }
-        }
-        if(choice<3 && !is_identity(randomU)) return randomU;
-        randomU = multiply(randomL,randomU);
-        if(choice>5 && !is_identity(randomU))return randomU;
-        if(!is_identity(randomU)) continue;
-        /*
-        randomU.at(0)= std::vector<int>(depth);randomU.at(0).at(0)=1;randomU.at(0).at(1)=0;randomU.at(0).at(2)=0;
-        randomU.at(1)= std::vector<int>(depth);randomU.at(1).at(0)=-6;randomU.at(1).at(1)=1;randomU.at(1).at(2)=0;
-        randomU.at(2)= std::vector<int>(depth);randomU.at(2).at(0)=5;randomU.at(2).at(1)=-5;randomU.at(2).at(2)=1;
-        return randomU;
-        */
-    }
-    return random;
-    
-}
-
-
-        // Gettig the values of the isl AST
-    int print_arguments_string(isl_ast_op_type prev_op,isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map )
-    {
-        int i, n, p = 0;
-
-        n = isl_ast_expr_get_op_n_arg(expr);
-
-        if (n < 0) return 0;
-        if (n == 0) return 0;
-        p = 0;
-        for (i = 0; i < n; ++i) {
-            isl_ast_expr *arg;
-            //std::cout<<"---------------Arg";
-            //std::cout<<i;
-            //std::cout<<"\n";
-            arg = isl_ast_expr_get_op_arg(expr, i);
-            if(i==0){
-                p = get_value(arg,isl_ast_map);
-                if (prev_op == isl_ast_op_minus){p = -get_value(arg,isl_ast_map);break;}
-            }
-            else{
-                switch(prev_op){
-                    case isl_ast_op_add:{p = p+get_value(arg,isl_ast_map);break;}
-                    case isl_ast_op_sub:{p = p-get_value(arg,isl_ast_map);break;}
-                    case isl_ast_op_mul:{p = p*get_value(arg,isl_ast_map);break;}
-                    case isl_ast_op_div:{if(get_value(arg,isl_ast_map)!= 0)p = p / get_value(arg,isl_ast_map);break;}
-                    case isl_ast_op_max:{p = std::max(p,get_value(arg,isl_ast_map));break;}
-                    case isl_ast_op_min:{p = std::min(p,get_value(arg,isl_ast_map));break;}
-                    case isl_ast_op_minus:{p = -get_value(arg,isl_ast_map);break;}
-                    default: p = get_value(arg,isl_ast_map);break;;
-                }
-            }
-            isl_ast_expr_free(arg);
-        }
-        return p;
-    }
-    //get the Upper bound of an id
-    int get_id_value(std::string id,std::vector<std::vector<int>>isl_ast_map)
-    {
-        std::map <int,  std::tuple<std::string , std::string,std::string> >::iterator it;
-
-        /*for (it = isl_ast_map.begin(); it != isl_ast_map.end(); it++)
-        {
-            if(std::get<2>(it->second) == id){
-                return (std::stoi(std::get<0>(it->second)) + std::stoi(std::get<1>(it->second))) / 2;
-            }
-        }*/
-        return 0;
-    }
-
-    int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map){
-
-        enum isl_ast_expr_type type;
-        enum isl_ast_op_type op;
-        isl_id *id;
-        isl_val *v;
-        std::string p;
-        int val = 0;
-
-        if (!expr){return -1;}
         else{
-            type = isl_ast_expr_get_type(expr);
-            switch (type) {
-                case isl_ast_expr_error: return 0; break;
-                case isl_ast_expr_op:
-                    op = isl_ast_expr_get_op_type(expr);
-                    if (op == isl_ast_op_error) return 0;
-                    val=val+print_arguments_string(op,expr,isl_ast_map);
-                    //std::cout<<"Entreing OP : ";
-                    //std::cout<<op;
-                    //std::cout<<"\n";
-                    break;
-                case isl_ast_expr_id:
+            switch(prev_op){
+                case isl_ast_op_add:{p = p+get_value(arg,isl_ast_map);break;}
+                case isl_ast_op_sub:{p = p-get_value(arg,isl_ast_map);break;}
+                case isl_ast_op_mul:{p = p*get_value(arg,isl_ast_map);break;}
+                case isl_ast_op_div:{if(get_value(arg,isl_ast_map)!= 0)p = p / get_value(arg,isl_ast_map);break;}
+                case isl_ast_op_max:{p = std::max(p,get_value(arg,isl_ast_map));break;}
+                case isl_ast_op_min:{p = std::min(p,get_value(arg,isl_ast_map));break;}
+                case isl_ast_op_minus:{p = -get_value(arg,isl_ast_map);break;}
+                default: p = get_value(arg,isl_ast_map);break;;
+            }
+        }
+        isl_ast_expr_free(arg);
+    }
+    return p;
+}
+// get the Upper bound of an id
+int get_id_value(std::string id,std::vector<std::vector<int>>isl_ast_map)
+{
+    std::map <int,  std::tuple<std::string , std::string,std::string> >::iterator it;
+    /*
+    for (it = isl_ast_map.begin(); it != isl_ast_map.end(); it++)
+    {
+        if(std::get<2>(it->second) == id){
+            return (std::stoi(std::get<0>(it->second)) + std::stoi(std::get<1>(it->second))) / 2;
+        }
+    }
+    */
+    return 0;
+}
+
+int get_value(isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map){
+
+    enum isl_ast_expr_type type;
+    enum isl_ast_op_type op;
+    isl_id *id;
+    isl_val *v;
+    std::string p;
+    int val = 0;
+
+    if (!expr){return -1;}
+    else{
+        type = isl_ast_expr_get_type(expr);
+        switch (type) {
+            case isl_ast_expr_error: return 0; break;
+            case isl_ast_expr_op:
+                op = isl_ast_expr_get_op_type(expr);
+                if (op == isl_ast_op_error) return 0;
+                val=val+print_arguments_string(op,expr,isl_ast_map);
+                //std::cout<<"Entreing OP : ";
+                //std::cout<<op;
+                //std::cout<<"\n";
+                break;
+            case isl_ast_expr_id:
+                id = isl_ast_expr_get_id(expr);
+                p = isl_id_get_name(id);
+                val = get_id_value(p,isl_ast_map);
+                //std::cout<<"Entreing Id with";
+                //std::cout<<val;
+                //std::cout<<"\n";
+                break;
+            case isl_ast_expr_int:
+                v = isl_ast_expr_get_val(expr);val=1;
+                val= isl_val_get_num_si(v);
+                //std::cout<<"Entreing Int with";
+                //std::cout<<val;
+                //std::cout<<"\n";
+                break;
+            default: return 0;
+            }
+    return val;
+    }
+}
+
+std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map,bool is_bound)
+{
+    enum isl_ast_expr_type type;
+    enum isl_ast_op_type op;
+    isl_id *id;
+    isl_val *v;
+    std::string p;
+
+    if (!expr){return "!Expression";}
+    else{
+        type = isl_ast_expr_get_type(expr);
+        switch (type) {
+            case isl_ast_expr_error: return "$Error in the expression"; break;
+            case isl_ast_expr_op:
+                op = isl_ast_expr_get_op_type(expr);
+                if (op == isl_ast_op_error) return "$Error in the operation type";
+                p = std::to_string(print_arguments_string(op,expr,isl_ast_map));
+                //std::cout<<"Entreing OP with ";
+                //std::cout<<op;
+                //std::cout<<"\n";
+                break;
+            case isl_ast_expr_id:
+                if(!is_bound){
                     id = isl_ast_expr_get_id(expr);
                     p = isl_id_get_name(id);
-                    val = get_id_value(p,isl_ast_map);
-                    //std::cout<<"Entreing Id with";
-                    //std::cout<<val;
-                    //std::cout<<"\n";
-                    break;
-                case isl_ast_expr_int:
-                    v = isl_ast_expr_get_val(expr);val=1;
-                    val= isl_val_get_num_si(v);
-                    //std::cout<<"Entreing Int with";
-                    //std::cout<<val;
-                    //std::cout<<"\n";
-                    break;
-                default: return 0;
                 }
-        return val;
-        }
-    }
+                else{
+                    id = isl_ast_expr_get_id(expr);
+                    p = isl_id_get_name(id);
+                    p=std::to_string(  get_id_value(isl_id_get_name(id),isl_ast_map));
+                }
 
-    std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>> isl_ast_map,bool is_bound)
-    {
-        enum isl_ast_expr_type type;
-        enum isl_ast_op_type op;
-        isl_id *id;
-        isl_val *v;
-        std::string p;
-
-        if (!expr){return "!Expression";}
-        else{
-            type = isl_ast_expr_get_type(expr);
-            switch (type) {
-                case isl_ast_expr_error: return "$Error in the expression"; break;
-                case isl_ast_expr_op:
-                    op = isl_ast_expr_get_op_type(expr);
-                    if (op == isl_ast_op_error) return "$Error in the operation type";
-                    p = std::to_string(print_arguments_string(op,expr,isl_ast_map));
-                    //std::cout<<"Entreing OP with ";
-                    //std::cout<<op;
-                    //std::cout<<"\n";
-                    break;
-                case isl_ast_expr_id:
-                    if(!is_bound){
-                        id = isl_ast_expr_get_id(expr);
-                        p = isl_id_get_name(id);
-                    }
-                    else{
-                        id = isl_ast_expr_get_id(expr);
-                        p = isl_id_get_name(id);
-                        p=std::to_string(  get_id_value(isl_id_get_name(id),isl_ast_map));
-                    }
-
-                    //std::cout<<"Entreing Id with ";
-                    //std::cout<<p;
-                    //std::cout<<"\n";
-                    break;
-                case isl_ast_expr_int:
-                    v = isl_ast_expr_get_val(expr);
-                    p = std::to_string(isl_val_get_num_si(v));
-                    //std::cout<<"Entreing Int with";
-                    //std::cout<<p;
-                    //std::cout<<"\n";
-                    break;
-                default: return "%";
-            }
-        return p;
+                //std::cout<<"Entreing Id with ";
+                //std::cout<<p;
+                //std::cout<<"\n";
+                break;
+            case isl_ast_expr_int:
+                v = isl_ast_expr_get_val(expr);
+                p = std::to_string(isl_val_get_num_si(v));
+                //std::cout<<"Entreing Int with";
+                //std::cout<<p;
+                //std::cout<<"\n";
+                break;
+            default: return "%";
         }
+    return p;
     }
-    std::vector<int> format_bound(int bound, int id_rank, int size, bool is_lower, bool with_bounds){
-          std::vector<int> output;
-          
-          for(int i=0;i< size ;i++){
-              if(i==id_rank){
-                if(is_lower){ output.push_back(-1);}
-                else{output.push_back(1);}               
-              }else{
-                output.push_back(0);
-              }
-          }
-          if(with_bounds){
-            if(is_lower){ output.push_back(-bound);}
-            else{ output.push_back(bound);}
-        }
-        return output;
-    }
+}
     
  std::vector<std::vector<int>> get_ast_isl_bound_matrice(syntax_tree& ast){
 
@@ -1065,156 +631,65 @@ Generate one random matrix that verifies the conditions of: 1- determinant is on
      
         return isl_ast_mat;
 }
-
-std::vector<std::vector<int>> getTranspose(const std::vector<std::vector<int>> matrix1) {
-
-    //Transpose-matrix: height = width(matrix), width = height(matrix)
-    std::vector<std::vector<int>> solution(matrix1[0].size(), std::vector<int> (matrix1.size()));
-
-    //Filling solution-matrix
-    for(size_t i = 0; i < matrix1.size(); i++) {
-        for(size_t j = 0; j < matrix1[0].size(); j++) {
-            solution[j][i] = matrix1[i][j];
-        }
-    }
-    return solution;
-}
-
-std::vector<std::vector<int>> getCofactor(const std::vector<std::vector<int>> vect) {
-    if(vect.size() != vect[0].size()) {
-        throw std::runtime_error("Matrix is not quadratic");
-    } 
-
-    std::vector<std::vector<int>> solution(vect.size(), std::vector<int> (vect.size()));
-    std::vector<std::vector<int>> subVect(vect.size() - 1, std::vector<int> (vect.size() - 1));
-
-    for(std::size_t i = 0; i < vect.size(); i++) {
-        for(std::size_t j = 0; j < vect[0].size(); j++) {
-
-            int p = 0;
-            for(size_t x = 0; x < vect.size(); x++) {
-                if(x == i) {
-                    continue;
-                }
-                int q = 0;
-
-                for(size_t y = 0; y < vect.size(); y++) {
-                    if(y == j) {
-                        continue;
-                    }
-
-                    subVect[p][q] = vect[x][y];
-                    q++;
-                }
-                p++;
-            }
-            solution[i][j] = pow(-1, i + j) * determinant(subVect,subVect.size());
-        }
-    }
-    return solution;
-}
-
-std::vector<std::vector<int>> getInverse(const std::vector<std::vector<int>> A) {
-    int d = 1.0/determinant(A,A.size());
-    std::vector<std::vector<int>> solution(A.size(), std::vector<int> (A.size()));
-
-    if(A.size() == 1){
-        std::vector<int> ans = {0};
-        ans[0] = 1.0/determinant(A,A.size());
-        solution[0] = ans;
-        return solution;
-    }
-
-    for(size_t i = 0; i < A.size(); i++) {
-        for(size_t j = 0; j < A.size(); j++) {
-            solution[i][j] = A[i][j] * d; 
-        }
-    }
-    if(d==1){return getTranspose(getCofactor(solution));}
-    if(d==-1){   std::vector<std::vector<int>> res=getTranspose(getCofactor(solution));
-             for (int i = 0; i < res.size(); i++) {
-                for (int j = 0; j < res[i].size(); j++)
-                   res[i][j] =  -res[i][j];
-              
-              }
-              return res;
-    }
-
-}
-
-
-std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> get_ast_isl_constraint_matrice( std::vector<std::vector<int>> isl_ast_mat){
-
-        std::vector< std::vector<int>> constraint_mat;
-        std::vector< std::vector<int>> constraint_mat_with_bounds;
-       
-        for (int i = 0; i < isl_ast_mat.size(); i++) {
-        for (int j = 0; j < isl_ast_mat[i].size(); j++)
-            {
-               if (j==0){  
-                    constraint_mat.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),true,false));  
-                    constraint_mat_with_bounds.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),true,true));  
-                } else{
-                    constraint_mat.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),false,false)); 
-                    constraint_mat_with_bounds.push_back(format_bound(isl_ast_mat[i][j],i,isl_ast_mat.size(),false,true)); 
-                }       
-            }
-        }
-        return std::pair< std::vector<std::vector<int>>,std::vector<std::vector<int>>> (constraint_mat,constraint_mat_with_bounds);
-}
+// list of matrices to explore at each level of the exploration tree
 std::vector <std::vector < std::vector<int> >> matrices;
+// list of hashes of matrices we explored before to avoid repeating schedules 
 std::vector<std::size_t> hashes;
+
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    //std::cout<<"starting search save matrix"<<std::endl;
-    //std::cout<<"nb explored mats: "<<ast.nb_explored_matrices<<" exploration depth: "<<ast.search_depth<<std::endl;    
+
+    //     
     std::default_random_engine rand_generator;
 
-
+    
     std::vector<syntax_tree*> children;
+    // list of ASTs to be explored for next level 
     std::vector<syntax_tree*> to_be_explored;
     
+
     int nb_explored_optims = ast.nb_explored_optims;
     
-    //Generate n matrice asts to be explored
-    //To change the number of matrices being explored go to: generate_schedules then the MATRIX case and change the length of the loop
+    // generate n matrices which is the max number of matrices to be explored
     optimization_type optim_type = optimization_type::MATRIX;
 
     children = scheds_gen->generate_schedules(ast, optim_type);
     std::hash<std::string> hasher;
-
+    // hash the parent 
     std::size_t parent_hash=hasher(ast.get_schedule_str());
-    
+    // generate the matrices to be explored at this level
     matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
+
+    // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
+
         optimization_info optim_info;
         optim_info.type = optimization_type::MATRIX;
         optim_info.comps = ast.computations_list;
+        // for the original schedule, the transformation matrix is the identity
         optim_info.matrix = get_identity(ast.get_program_depth());
         ast.new_optims.push_back(optim_info);
+        // the root to the hashes to avoid repeating the identity matrix
         hashes.push_back(hasher(ast.get_schedule_str()));
     }
-    //std::cout<<"matrices: "<<matrices.size()<<"children size: "<<children.size()<<std::endl;
+    
     children.resize(std::min((int)matrices.size(), (int)children.size()));
-    //std::cout<<"matrices: "<<matrices.size()<<"children size: "<<children.size()<<std::endl;
     
-    // Stop if no more optimizations can be applied
-    //Add the current AST to the list of children 
-    if (children.size() == 0){
-        //std::cout<<"about to continue"<<std::endl;
-        return ;
-    }
     
-    // Evaluate children and sort them from smallest to highest evaluation
-    // evaluate while removing illegal versions
+    // stop if no more optimizations can be applied
+    if (children.size() == 0) return ;
+    
+
+
+    
     auto iterator = children.begin();
     
 
-    //std::map <std::string,std::string>* corr_map;
+    
     std::vector<std::vector<int>> bounds_mat;
-    std::pair<std::vector<std::vector<int>>,std::vector<std::vector<int>> > constraint_mats;
+    
     bounds_mat = get_ast_isl_bound_matrice(ast);
-    constraint_mats = get_ast_isl_constraint_matrice(bounds_mat);
+    
     
     std::vector<std::vector<std::vector<int>>> repeated;
     // Add the corr_map to the ast structue
@@ -1222,46 +697,39 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     //Hash the program string to get a unique seed for each program 
     
     
-    
+    // number of matrices explored so far at this level. used to go through the matrices global variable
     int nb_matrices =0;
-    int nb_steps = 0;
+
     syntax_tree *child = *iterator;
+
+
+    // evaluate children and sort them from smallest to highest evaluation
+    // evaluate while removing illegal versions
     while (iterator != children.end())
     {
-        //std::cout<<"starting loop"<<std::endl;
-        //If we tried to find a new matrix too many times, we give up and explore the ones we found so far 
-        if (nb_steps++>MAX_NB_STEPS){
-            break;
-        } 
+         
         child = *iterator;
         
-        // Add the corr_map to the ast structue
-        //child->corr_map = corr_map;
+        
         
         child->nb_explored_optims = nb_explored_optims;
         
         
         
-        //std::vector<std::vector<int>> vec {{1,0,0},{0,6,0},{0,0,1}};
         //add the matrix to optim.info
-        
         child->new_optims.back().matrix = matrices.at(nb_matrices);
-        
         nb_matrices++;
         
-        
+        // get the bounds of the original program
         child->bounds_matrix = bounds_mat;
             
-        //std::cout<<"before multiply"<<std::endl;    
+        // multipy the bounds by the matrix to get the transformed bounds estimation    
         if(child->transformed_bounds_matrix.size()==0){
             child->transformed_bounds_matrix = multiply(child->new_optims.back().matrix,child->bounds_matrix);
         }else{
             child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
         }
-        //std::cout<<"after multiply"<<std::endl;
-       
-        //std::cout << "child hash of hash of:  " << evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
-        //std::cout << "parent of hash of:  " << evaluate_by_learning_model::get_schedule_json(ast)<<std::endl;
+        
 
         child->transform_ast();
 
@@ -1271,7 +739,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 child->print_previous_optims();
                 std::cout << "\n-----------" << std::endl;
                 child->print_new_optims();
-                //std::cout<<child->get_schedule_str()<<std::endl;
+                
                 child->print_ast();
                 child->print_isl_states();
                 std::cout << "\n<illegal>\n";
@@ -1280,8 +748,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             iterator = children.erase(iterator);
         }
         else {
-    
-            
+            // if the transformation is legal, add the new matrix to the transformation list
             if(child->transformation_matrix.size()==0){
                 child->transformation_matrix = child->new_optims.back().matrix;
             }else{
@@ -1291,13 +758,14 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         
             
             
-            
+            // hash the legal matrix 
             std::size_t hash=hasher(child->get_schedule_str());
             
+
             bool repeated = false;
-             
+            // check if we explored this matrix before  
             for(std::size_t hashe:hashes){
-                //std::cout<<hashe<<" vs "<<hash<<std::endl;*********************************
+                
                 if(hashe==hash){
                     delete child;
                     iterator = children.erase(iterator);
@@ -1307,17 +775,13 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 }
             }
         
-            if(repeated){
-                    //std::cout<<"about to continue"<<std::endl;
-                    continue;
-            }
+            if(repeated) continue;
 
             
-             
+            // if the matrix is legal and not repeated we add its hash to the list of seen hashes and we start the evaluation 
             hashes.push_back(hash);
                
             // print and evaluate Ast
-            
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 child->print_previous_optims();
                 std::cout << "\n-----------" << std::endl;
@@ -1338,6 +802,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
             std::vector<float> measurements;
             
             
+            // create a child process to execute the code and get measurements
+            // this is added so that we can limit the code generation time for large programs
             pid_t pid;
             pid = fork();
 
@@ -1348,31 +814,39 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
                 int size =measurements.size();
                 float ar[measurements.size()];
+
+                // put the measurements in an array to be sent to the parent process
                 
                 for(int i=0;i<measurements.size();i++) ar[i]=measurements.at(i);
                 
                 close(fd[0]);
+                // send number of measurements to parent process
                 write(fd[1], &size, sizeof(size));
-                
+                // send measurements to parent process
                 write(fd[1], &ar, sizeof(ar));
-                
+                // close the pipe
                 close(fd[1]);
+                // end child process
                 _exit(1);
             }
 
             // set up the signal handlers after forking so the child doesn't inherit them
-
+            // an alarm in the case of the timelimit is reached and the child process was interrupted
             signal(SIGALRM, alarm_handler);
+            // an alarm in the case of the child process ending ie. both data generation and evaluation are done
             signal(SIGCHLD, child_handler);
+            // an alarm in the case of the data generation ending before the timelimit. We still need to wait for the evaluation to be done. 
             signal(SIGUSR1,sig_usr);
-              // install an alarm to be fired after TIME_LIMIT
+            // install an alarm to be fired after TIME_LIMIT
             
+            // set the alarm
             alarm(TIME_LIMIT);
             
             pause();
 
             if (timeout) {
                 
+                // if the timeout has been reached    
                     
                 int result = waitpid(pid, NULL, WNOHANG);
                 if (result == 0) {
@@ -1382,16 +856,19 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                     // Remove all the optimizations
                     exec_eval->fct->reset_schedules();
                     measurements.clear();
+                    // if the timeout has been reached, put infinity as a measurement
+
                     measurements.push_back(std::numeric_limits<float>::infinity());
                     // cancel any previously set alarm 
                     alarm(0); 
+                    // kill child process
                     kill(pid, 9);
-                    //kill(pid, SIGKILL);
                     
                 
                     waitpid(-1,NULL,0);
                 } else {
-                    
+                    // if by the time we detect that the alarm has been raised, the evaluation has been completed
+                    // we recieve the measurements from the child
                     int size = 0;
                     close(fd[1]);
                     read(fd[0], &size, sizeof(int));
@@ -1404,7 +881,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 
                 
             }else if (child_done) {
-                
+                // the execution of the child is done, both code generation and evaluation
+                // we recieve the measurements from the child
                 int size =0;
                 close(fd[1]);
                 read(fd[0], &size, sizeof(int));
@@ -1414,12 +892,14 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 close(fd[0]);
                 
                 waitpid(-1,NULL,0);
-            }else if(cont){ 
+            }else if(cont){
+                // execution is not done but the code generation is done. This happens for large programs that take a long time to execute
+                // cancel the timeout alarm  
                 alarm(0);
                 int size=0;
-                
+                // we wait for the evalution of the generated code
                 while(!child_done){}
-                
+                // after evealuation is done, we recieve the measurements from the child
                 close(fd[1]);
                 read(fd[0], &size, sizeof(int));
                 float ar[size];
@@ -1471,19 +951,11 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     ast_copy->nb_explored_optims = nb_explored_optims;
                     
     to_be_explored.push_back(ast_copy);
-    //std::cout << "to be explored: " << to_be_explored.size()<< std::endl;                
+    
+                    
     parent_trace->add_child_path(ast_copy, parent_trace->get_candidate_id());
-    //std::cout<<"ended loop"<<std::endl;
-    //to_be_explored.resize(std::min(nb_matrices, (int)to_be_explored.size()));
     
 
-    //std::cout<<"printing children to be explored before beaming"<<std::endl;
-    for (syntax_tree *child : to_be_explored)
-    {
-        //std::cout<<evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
-        //std::cout<<"print"<<std::endl;
-        //std::cout<<child->get_schedule_str()<<std::endl;
-    }
 
     
     // Sort children from smallest evaluation to largest
@@ -1502,24 +974,18 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     
 
     to_be_explored.resize(std::min(beam_size, (int)to_be_explored.size()));
-    //std::cout<<"printing children to be explored"<<std::endl;
+   
+    
     for (syntax_tree *child : to_be_explored)
     {
-        //std::cout<<evaluate_by_learning_model::get_schedule_json(*child)<<std::endl;
-        //std::cout<<"print"<<std::endl;
-        //std::cout<<child->get_schedule_str()<<std::endl;
-    }
-    //std::cout<<"printing children to be explored"<<std::endl;
-    // Search recursively on the best children
-    //std::cout<<"child->nb_explored_matrices: "<<child->nb_explored_matrices<<"depth: "<<child->search_depth<<std::endl;
-    for (syntax_tree *child : to_be_explored)
-    {
-        //std::cout<<"about to explore"<<std::endl;
+        // increment the search depth for the recursive call 
         child->search_depth = ast.search_depth + 1;
+        // if we are under the maximum depth of matrices to explore then call search_save_matrix recursivly
         if (child->search_depth<MAX_MAT_DEPTH && child->search_depth<=child->nb_explored_matrices ){
             search_save_matrix(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
         }else{
-            //if (child->search_depth>child->nb_explored_matrices) std::cout << "Number of measurements : " << std::endl;
+            // if we surpassed the MAX_MAT_DEPTH amount of matrices to explore OR we detected the parent of this level through
+            // the child->search_depth<=child->nb_explored_matrices condition which means that the search level is greater than the number of applied matrices
             search_save(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);  
         }
     }
