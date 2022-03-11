@@ -142,7 +142,6 @@ void sig_usr(int signo){
 
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    return;
     std::default_random_engine rand_generator;
     
     
