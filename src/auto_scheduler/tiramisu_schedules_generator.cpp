@@ -658,7 +658,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             if (l0_fact==0) l0_fact++;
             matrix.at(l0).at(l1) = l0_fact;
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"decrementing 2d1"<<std::endl;i--;};
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;};
         }
     }
     // second skewing pattern
@@ -685,7 +685,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             if (l0_fact==0) l0_fact++;
             matrix.at(l1).at(l0) = l0_fact;
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"decrementing 2d2"<<std::endl;i--;}
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
     }
     bool saw_zero = false;
@@ -718,7 +718,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
                 if (j!=l0)matrix.at(l0).at(j) = l0_fact;
             }
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"decrementing 3d1"<<std::endl;i--;}
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
         
         for(int i=0;i<d3_skew;i++){
@@ -745,7 +745,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
                 if (k!=l0)matrix.at(k).at(l0) = l0_fact;
             }
             // if we haven't added this skew patter yet
-            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{std::cout<<"decrementing 3d2"<<std::endl;i--;}
+            if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
     }
     
