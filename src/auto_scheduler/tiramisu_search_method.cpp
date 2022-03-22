@@ -142,7 +142,7 @@ void sig_usr(int signo){
 
 void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-    
+  
     std::default_random_engine rand_generator;
     
     
@@ -622,7 +622,7 @@ std::vector<std::size_t> hashes;
 
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-
+  
     //     
     std::default_random_engine rand_generator;
 
@@ -642,6 +642,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // hash the parent 
     std::size_t parent_hash=hasher(ast.get_schedule_str());
     // generate the matrices to be explored at this level
+   
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
     
     // if this is the roor of the exploration tree 
@@ -658,7 +659,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     }
     
     children.resize(std::min((int)matrices.size(), (int)children.size()));
-    
+   
     
     // stop if no more optimizations can be applied
     if (children.size() == 0) return ;

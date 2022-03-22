@@ -254,6 +254,7 @@ void exhaustive_generator::generate_unrollings(ast_node *node, std::vector<synta
 }
  std::vector <std::vector < std::vector<int> >>  exhaustive_generator::get_matrices(syntax_tree& ast,int depth)
 {
+   
     std::vector<ast_node*> shared_nodes;
     std::vector<tiramisu::computation*> involved_computations;
     // add interchange matrices
@@ -375,7 +376,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
 }
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
 {
-    
+   
     this->matrices.clear();
 
     std::vector<ast_node*> shared_nodes;
@@ -626,6 +627,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     ast.recover_isl_states();
     // boolean for adding random skew patterns
     bool add_3d_skew=true;
+    if(depth<3) add_3d_skew = false;
     // number of random 3d skews to add
     int d3_skew = 2;
 
@@ -661,7 +663,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     }
     // second skewing pattern
     
-    
+    std::cout<<"dscew 2"<<std::endl;
     if(add_random_skew){
         for(int i=0;i<rand_skew;i++){
             std::vector <  std::vector<int> >  matrix(depth);
@@ -688,7 +690,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     }
     bool saw_zero = false;
     int cpt = 0;
-    
+    std::cout<<"skew 3"<<std::endl;
     
     if(add_3d_skew){
         for(int i=0;i<d3_skew;i++){
@@ -710,7 +712,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             
             for(int j=0;j<depth;j++){
                 // we only add a zero a limited number of times
-                if (saw_zero){int l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
+                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
                 if(l0_fact == 0) cpt++;
                 if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
                 if (j!=l0)matrix.at(l0).at(j) = l0_fact;
@@ -737,7 +739,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             int l0_fact;
             for(int k=0;k<depth;k++){
                 // we only add a zero a limited number of times
-                if (saw_zero){int l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
+                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
                 if(l0_fact == 0) cpt++;
                 if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
                 if (k!=l0)matrix.at(k).at(l0) = l0_fact;
@@ -748,7 +750,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     }
     
     return this->matrices;
-        
+      
 }
 
 
