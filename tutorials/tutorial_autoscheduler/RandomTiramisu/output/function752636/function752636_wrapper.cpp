@@ -1,5 +1,5 @@
 #include "Halide.h"
-#include "function191933_wrapper.h"
+#include "function752636_wrapper.h"
 #include "tiramisu/utils.h"
 #include <iostream>
 #include <time.h>
@@ -9,13 +9,13 @@ using namespace std::chrono;
 using namespace std;                
 int main(int, char **argv)
 {
-	double *c_buf00 = (double*)malloc(64*64* sizeof(double));
-	parallel_init_buffer(c_buf00, 64*64, (double)33);
-	Halide::Buffer<double> buf00(c_buf00, 64,64);
+	double *c_buf00 = (double*)malloc(257* sizeof(double));
+	parallel_init_buffer(c_buf00, 257, (double)51);
+	Halide::Buffer<double> buf00(c_buf00, 257);
 
-	double *c_buf01 = (double*)malloc(64*64*64* sizeof(double));
-	parallel_init_buffer(c_buf01, 64*64*64, (double)66);
-	Halide::Buffer<double> buf01(c_buf01, 64,64,64);
+	double *c_buf01 = (double*)malloc(258*258* sizeof(double));
+	parallel_init_buffer(c_buf01, 258*258, (double)58);
+	Halide::Buffer<double> buf01(c_buf01, 258,258);
 
     bool nb_runs_dynamic = is_nb_runs_dynamic();
     
@@ -25,7 +25,7 @@ int main(int, char **argv)
         for (int i = 0; i < nb_exec; i++) 
         {  
             auto begin = std::chrono::high_resolution_clock::now(); 
-            function191933(buf00.raw_buffer(),buf01.raw_buffer());
+            function752636(buf00.raw_buffer(),buf01.raw_buffer());
             auto end = std::chrono::high_resolution_clock::now(); 
 
             std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() / (double)1000000 << " " << std::flush; 
@@ -41,7 +41,7 @@ int main(int, char **argv)
         for (int i = 0; i < nb_exec; i++) 
         {  
             auto begin = std::chrono::high_resolution_clock::now(); 
-            function191933(buf00.raw_buffer(),buf01.raw_buffer());
+            function752636(buf00.raw_buffer(),buf01.raw_buffer());
             auto end = std::chrono::high_resolution_clock::now(); 
 
             duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() / (double)1000000;
@@ -54,7 +54,7 @@ int main(int, char **argv)
         for (int i = 0; i < nb_exec_remaining; i++) 
         {  
             auto begin = std::chrono::high_resolution_clock::now(); 
-            function191933(buf00.raw_buffer(),buf01.raw_buffer());
+            function752636(buf00.raw_buffer(),buf01.raw_buffer());
             auto end = std::chrono::high_resolution_clock::now(); 
 
             std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count() / (double)1000000 << " " << std::flush; 

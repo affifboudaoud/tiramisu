@@ -429,7 +429,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
     int depth = 0;
     if(ast.new_optims.size()>0) depth = ast.new_optims.at(0).matrix.size();
     std::vector < std::vector<int> > matrix(depth);
-     std::vector <std::vector < std::vector<int> >> matrices;
+    std::vector <std::vector < std::vector<int> >> matrices;
     for(int l = 0; l<matrix.size(); l++){
                             matrix.at(l)= std::vector<int>(depth);
                             for(int c = 0; c<matrix.size(); c++){
@@ -440,8 +440,7 @@ std::string evaluate_by_learning_model::get_schedule_json(syntax_tree const& ast
                                             }
                             }
                         }
-    std::vector < std::vector<int> > init_bounds_matrix;
-    std::vector < std::vector<int> > result_const_matrix;
+    
     
     // Get information about the schedule
     for (optimization_info const& optim_info : ast.new_optims)
