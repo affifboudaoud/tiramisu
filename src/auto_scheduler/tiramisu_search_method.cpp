@@ -329,25 +329,25 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 waitpid(-1,NULL,0);
             }
             
-           if(!unrolling_exception_thrown){
+           
             
-                child->evaluation = min_eval(measurements);
-                
-                parent_trace->add_child_path(child, schedules_annotations->size());
+            child->evaluation = min_eval(measurements);
+            
+            parent_trace->add_child_path(child, schedules_annotations->size());
 
-                std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
+            std::string schedule_annot = evaluate_by_learning_model::get_schedule_json(*child);
 
-                
+            
 
-                //remove the last two characters }\n
-                schedule_annot.pop_back();
-                schedule_annot.pop_back();
-                
-                if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
-                    schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
-                else
-                    schedule_annot += ", \n\"execution_times\" : null\n}\n";
-                
+            //remove the last two characters }\n
+            schedule_annot.pop_back();
+            schedule_annot.pop_back();
+            
+            if (std::isfinite(child->evaluation)) // the evaluation is not finite mean that the schedule didn't run
+                schedule_annot += ", \n\"execution_times\" : " + measurements_to_str(measurements) + "\n}\n";
+            else
+                schedule_annot += ", \n\"execution_times\" : null\n}\n";
+            if(!unrolling_exception_thrown){
                 schedules_annotations->push_back(schedule_annot);
 
                 if (std::atoi(read_env_var("AS_VERBOSE"))==1){
@@ -365,7 +365,7 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                     best_evaluation = child->evaluation;
                     best_ast = child;
                 }
-           }
+            }
             ++iterator;
 
 
