@@ -229,7 +229,7 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
                 // put get_measurements in a try block in the case of erroneous unrolling
                 // this should be added to ast_is_legal but for now it can only be detected at apply_optimization level
                 try{
-                     measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                     measurements.push_back(eval_func->evaluate(*(*iterator)));
                 }
                 catch(UnrollingException e){ 
                      // Remove all the optimizations
@@ -585,35 +585,28 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
  /**
     get the loop bounds from the isl ast (uses code gen)
   */
- std::vector<std::vector<int>> get_ast_isl_bound_matrice(syntax_tree& ast){
+ std::vector<std::vector<int>> get_ast_bound_matrice(syntax_tree& ast){
 
-    std::vector<std::vector<int>> isl_ast_bound_mat;
+    std::vector<std::vector<int>> ast_bound_mat;
     std::vector<int> p1;
-    isl_ast_expr * init_expr;
-    isl_ast_expr * cond_expr;
-    
-    int stop = 0;
-    // get the starting node of the new isl ast
-    ast.fct->gen_isl_ast();
-    isl_ast_node *ast_i = ast.fct->get_isl_ast();
+    ast_node* current;
+  
+    for(ast_node* root : ast.roots){
+        ast_bound_mat.clear();
+        current = root;
+        while(current!=nullptr){
 
-    while(stop != 1)
-    {
-        if(isl_ast_node_get_type(ast_i) == isl_ast_node_for)
-        {
-            init_expr = isl_ast_node_for_get_init(ast_i); //Lower bound
-            cond_expr = isl_ast_node_for_get_cond(ast_i); //Upper bound
-            
-            p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_bound_mat,true)));
-            p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_bound_mat,true)));
-            isl_ast_bound_mat.push_back(p1);
-
+            p1.push_back(current->low_bound);
+            p1.push_back(current->up_bound);
+          
+             std::cout<<p1.at(0)<<"  "<<p1.at(1)<<std::endl;
+            ast_bound_mat.push_back(p1);
             p1.clear();
-            ast_i = isl_ast_node_for_get_body(ast_i);
+            if(current->children.size()!=0)current = current->children[0];
+            else{break;}
         }
-        else{stop = 1;}
-    }   
-    return isl_ast_bound_mat;
+    }
+    return ast_bound_mat;
 }
 // list of matrices to explore at each level of the exploration tree
 //std::vector <std::vector < std::vector<int> >> matrices;
@@ -622,7 +615,7 @@ std::vector<std::size_t> hashes;
 
 void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout)
 {
-  
+    
     //     
     std::default_random_engine rand_generator;
 
@@ -642,9 +635,9 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // hash the parent 
     std::size_t parent_hash=hasher(ast.get_schedule_str());
     // generate the matrices to be explored at this level
-   
+    std::cout<<"before get matrices"<<std::endl;
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
-    
+    std::cout<<"after matrices"<<std::endl;
     // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
 
@@ -672,8 +665,9 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     // Getting the initial loop bounds 
     std::vector<std::vector<int>> bounds_mat;
-    bounds_mat = get_ast_isl_bound_matrice(ast);
-   
+    std::cout<<"before isl bounds"<<std::endl;
+    bounds_mat = get_ast_bound_matrice(ast);
+    std::cout<<"aftera isl bounds"<<std::endl;
     
     std::vector<std::vector<std::vector<int>>> repeated;
      
@@ -711,10 +705,23 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         }else{
             child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
         }
-        
-
+        int temp;
+        for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
+            for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
+                {
+                    if( j == 0 && child->transformed_bounds_matrix[i][0]> child->transformed_bounds_matrix[i][1]){
+                        temp = child->transformed_bounds_matrix[i][0];
+                        child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
+                        child->transformed_bounds_matrix[i][1] = temp; 
+                    }
+                    //std::cout << child->transformed_bounds_matrix[i][j] << " ";
+                }
+               
+      
+        }
+        std::cout<<"before transform ast"<<std::endl;
         child->transform_ast();
-
+        std::cout<<"after transform asts"<<std::endl;
         if (!child->ast_is_legal()) {
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 // print deleted Ast
@@ -793,7 +800,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 perror("fork failed");
                 exit(1);
             } else if (pid == 0) {
-                measurements = exec_eval->get_measurements_matrix(*child, false, schedule_timeout);
+                std::cout<<"about to evaluate"<<std::endl;
+                measurements.push_back(eval_func->evaluate(*(child)));
                 int size =measurements.size();
                 float ar[measurements.size()];
 

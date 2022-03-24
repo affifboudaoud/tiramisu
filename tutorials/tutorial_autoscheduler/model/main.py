@@ -1,29 +1,29 @@
 from os import environ
 import sys, json
-
-from hier_lstm import Model_hier_LSTM
+import torch
+from feed_forward import Model_FeedForward
 from json_to_tensor import *
 
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning) 
 warnings.filterwarnings('ignore', category=UserWarning)
 
-model_path = '/home/afif/tir/tiramisu/tutorials/tutorial_autoscheduler/model/hier_LSTM_fusion_tree_tagLo_transfer_5bl.pkl'
+model_path = '/home/afif/single/tiramisu/tutorials/tutorial_autoscheduler/model/temps_save_400K_single_comp_4Layers.pkl'
 
 with torch.no_grad():
     device = 'cpu'
     torch.device('cpu')
-    
-    environ['layers'] = '600 350 200 180'
-    environ['dropouts'] = '0.225 ' * 4
-    
-    input_size = 2520
-    output_size = 1
-    
-    layers_sizes = list(map(int, environ.get('layers', '300 200 120 80 30').split()))
-    drops = list(map(float, environ.get('dropouts', '0.2 0.2 0.1 0.1 0.1').split()))
 
-    model = Model_hier_LSTM(input_size, output_size, hidden_sizes=layers_sizes, drops=drops)
+    environ['layers'] = '350 400 200 180'
+    environ['dropouts'] = '0.175 ' * 4
+
+    input_size = 744
+    output_size = 1
+
+    layers_sizes = list(map(int, environ.get('layers', '350 400 200 180').split()))
+    drops = list(map(float, environ.get('dropouts', '0.175 0.175 0.175 0.175').split()))
+
+    model = Model_FeedForward(input_size,layer_sizes= [ 350, 400, 200, 180], drops=[0.175, 0.175, 0.175,0.175])
     model.load_state_dict(torch.load(model_path, map_location='cpu'))
     model.to(device)
     model.eval()
@@ -35,10 +35,12 @@ with torch.no_grad():
 
             prog_json = json.loads(prog_json)
             sched_json = json.loads(sched_json)
+	    
+            comp_repr_template, placeholders_indices_dict = get_representation_template(prog_json)	
 
-            tree_tensor = get_representation(prog_json, sched_json)
+            schedule_vector = get_schedule_representation(prog_json, sched_json, comp_repr_template, placeholders_indices_dict)
             
-            speedup = model.forward(tree_tensor)
+            speedup = model.forward(torch.FloatTensor(schedule_vector))
             print(float(speedup.item()))
             
     except EOFError:

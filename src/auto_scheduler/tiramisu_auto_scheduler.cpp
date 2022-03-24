@@ -22,8 +22,10 @@ void auto_scheduler::sample_search_space(std::string filename, bool timeout_sche
     setenv("INIT_EXEC_TIME", "0", true); // set the INIT_EXEC_TIME to 0 meaning that it's the non scheduled version
     float initial_timeout = std::atof(read_env_var("INITIAL_TIMEOUT"));
 
-    std::vector<float> initial_measurements = exec_evaluator->get_measurements(ast, true, initial_timeout);
+    std::vector<float> initial_measurements;initial_measurements.push_back(eval_func->evaluate(ast));
+
     initial_exec_time = min_eval(initial_measurements);
+
     if (std::isinf(initial_exec_time)){
         std::cerr << "error: Evaluation of the non scheduled version of the program failed "<< std::endl;
         exit(1);
@@ -104,13 +106,14 @@ void auto_scheduler::sample_search_space(std::string filename, bool timeout_sche
 }
 void auto_scheduler::sample_search_space_random_matrix(std::string filename, bool timeout_schedules)
 {
+    
     std::chrono::steady_clock::time_point sampling_start = std::chrono::steady_clock::now();
     fct->reset_schedules();
 
     setenv("INIT_EXEC_TIME", "0", true); // set the INIT_EXEC_TIME to 0 meaning that it's the non scheduled version
     float initial_timeout = std::atof(read_env_var("INITIAL_TIMEOUT"));
-
-    std::vector<float> initial_measurements = exec_evaluator->get_measurements(ast, true, initial_timeout);
+    
+    std::vector<float> initial_measurements;initial_measurements.push_back(eval_func->evaluate(ast));
     initial_exec_time = min_eval(initial_measurements);
     if (std::isinf(initial_exec_time)){
         std::cerr << "error: Evaluation of the non scheduled version of the program failed "<< std::endl;
@@ -148,6 +151,7 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
 
     searcher->set_exec_eval(exec_evaluator);
     std::hash<std::string> hasher;
+
 
     auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
     srand(hashed);

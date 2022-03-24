@@ -69,19 +69,19 @@ int main(int argc, char **argv)
     auto_scheduler::schedules_generator *scheds_gen = new auto_scheduler::ml_model_schedules_generator();
 
     // An evaluation function that measures execution time by compiling and executing the program
-    auto_scheduler::evaluate_by_execution *exec_eval = new auto_scheduler::evaluate_by_execution({&buf_output, &buf_bias, &buf_src, &buf_weights},
-                                                                                                 "function.o", "./wrapper");
+    // auto_scheduler::evaluate_by_execution *exec_eval = new auto_scheduler::evaluate_by_execution({&buf_output, &buf_bias, &buf_src, &buf_weights},
+    //                                                                                             "function.o", "./wrapper");
 
     // An evaluation function that uses an ML model to estimate speedup
-   // auto_scheduler::evaluation_function *model_eval = new auto_scheduler::evaluate_by_learning_model(py_cmd_path, {py_interface_path});
+    auto_scheduler::evaluation_function *model_eval = new auto_scheduler::evaluate_by_learning_model(py_cmd_path, {py_interface_path});
 
     // Two search methods : Beam Search and MCTS
-    auto_scheduler::search_method *bs = new auto_scheduler::beam_search(beam_size, max_depth, exec_eval, scheds_gen);
+    auto_scheduler::search_method *bs = new auto_scheduler::beam_search(beam_size, max_depth, model_eval, scheds_gen);
     //auto_scheduler::mcts *mcts = new auto_scheduler::mcts(nb_samples, topk, max_depth, model_eval, exec_eval, scheds_gen);
 	
     // Create the autoscheduler and start search
-    auto_scheduler::auto_scheduler as(bs, exec_eval);
-    as.set_exec_evaluator(exec_eval);
+    auto_scheduler::auto_scheduler as(bs, model_eval);
+    as.set_exec_evaluator(model_eval);
 
     as.sample_search_space_random_matrix("result_1.json");
 
