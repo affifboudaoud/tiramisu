@@ -585,35 +585,28 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
  /**
     get the loop bounds from the isl ast (uses code gen)
   */
- std::vector<std::vector<int>> get_ast_isl_bound_matrice(syntax_tree& ast){
+ std::vector<std::vector<int>> get_ast_bound_matrice(syntax_tree& ast){
 
-    std::vector<std::vector<int>> isl_ast_bound_mat;
+    std::vector<std::vector<int>> ast_bound_mat;
     std::vector<int> p1;
-    isl_ast_expr * init_expr;
-    isl_ast_expr * cond_expr;
-    
-    int stop = 0;
-    // get the starting node of the new isl ast
-    ast.fct->gen_isl_ast();
-    isl_ast_node *ast_i = ast.fct->get_isl_ast();
+    ast_node* current;
+  
+    for(ast_node* root : ast.roots){
+        ast_bound_mat.clear();
+        current = root;
+        while(current!=nullptr){
 
-    while(stop != 1)
-    {
-        if(isl_ast_node_get_type(ast_i) == isl_ast_node_for)
-        {
-            init_expr = isl_ast_node_for_get_init(ast_i); //Lower bound
-            cond_expr = isl_ast_node_for_get_cond(ast_i); //Upper bound
-            
-            p1.push_back(std::stoi(get_expr_isl_string(init_expr,isl_ast_bound_mat,true)));
-            p1.push_back(std::stoi(get_expr_isl_string(cond_expr,isl_ast_bound_mat,true)));
-            isl_ast_bound_mat.push_back(p1);
-
+            p1.push_back(current->low_bound);
+            p1.push_back(current->up_bound);
+          
+            //std::cout<<p1.at(0)<<"  "<<p1.at(1)<<std::endl;
+            ast_bound_mat.push_back(p1);
             p1.clear();
-            ast_i = isl_ast_node_for_get_body(ast_i);
+            if(current->children.size()!=0)current = current->children[0];
+            else{break;}
         }
-        else{stop = 1;}
-    }   
-    return isl_ast_bound_mat;
+    }
+    return ast_bound_mat;
 }
 // list of matrices to explore at each level of the exploration tree
 //std::vector <std::vector < std::vector<int> >> matrices;
@@ -672,7 +665,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     // Getting the initial loop bounds 
     std::vector<std::vector<int>> bounds_mat;
-    bounds_mat = get_ast_isl_bound_matrice(ast);
+    bounds_mat = get_ast_bound_matrice(ast);
    
     
     std::vector<std::vector<std::vector<int>>> repeated;
@@ -711,7 +704,20 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         }else{
             child->transformed_bounds_matrix = multiply( child->new_optims.back().matrix,child->transformed_bounds_matrix);
         }
-        
+        int temp;
+        for (int i = 0; i < child->transformed_bounds_matrix.size(); i++) {
+            for (int j = 0; j < child->transformed_bounds_matrix[i].size(); j++)
+                {
+                    if( j == 0 && child->transformed_bounds_matrix[i][0]> child->transformed_bounds_matrix[i][1]){
+                        temp = child->transformed_bounds_matrix[i][0];
+                        child->transformed_bounds_matrix[i][0] = child->transformed_bounds_matrix[i][1];
+                        child->transformed_bounds_matrix[i][1] = temp; 
+                    }
+                    //std::cout << child->transformed_bounds_matrix[i][j] << " ";
+                }
+               
+      
+        }
 
         child->transform_ast();
 
