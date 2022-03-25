@@ -28,10 +28,10 @@ class Model_FeedForward(nn.Module):
         self.ELU=nn.ELU()
 
     def forward(self, batched_X): 
-        x = batched_X
+        x = batched_X 
         for i in range(len(self.regression_layers)):
             x = self.regression_layers[i](x)
             x = self.regression_dropouts[i](self.ELU(x))
         out = self.predict(x)
             
-        return self.ELU(out)
+        return self.ELU(out[:,0])

@@ -75,7 +75,7 @@ void beam_search::search(syntax_tree& ast)
             std::cout << "\n-----------" << std::endl;
             (*iterator)->print_new_optims();
             (*iterator)->print_ast();
-            std::cout << "Evaluation : " << (*iterator)->evaluation << std::endl << std::endl;
+            std::cout << "Speed up : " << -(*iterator)->evaluation << std::endl << std::endl;
             (*iterator)->print_isl_states();
             (*iterator)->print_computations_accesses();
             std::cout << "\n<legal>\n";
@@ -352,7 +352,7 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
 
                 if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                     std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
-                    std::cout << "Evaluation : " << child->evaluation << std::endl;
+                    std::cout << "Speed up : " << -child->evaluation << std::endl;
                     std::cout << "Number of measurements : " << measurements.size() << std::endl;
                     std::cout << "===================================" << std::endl << std::endl;
                 }
@@ -599,7 +599,6 @@ std::string get_expr_isl_string( isl_ast_expr *expr,std::vector<std::vector<int>
             p1.push_back(current->low_bound);
             p1.push_back(current->up_bound);
           
-             std::cout<<p1.at(0)<<"  "<<p1.at(1)<<std::endl;
             ast_bound_mat.push_back(p1);
             p1.clear();
             if(current->children.size()!=0)current = current->children[0];
@@ -635,9 +634,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // hash the parent 
     std::size_t parent_hash=hasher(ast.get_schedule_str());
     // generate the matrices to be explored at this level
-    std::cout<<"before get matrices"<<std::endl;
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
-    std::cout<<"after matrices"<<std::endl;
     // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
 
@@ -665,9 +662,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     // Getting the initial loop bounds 
     std::vector<std::vector<int>> bounds_mat;
-    std::cout<<"before isl bounds"<<std::endl;
     bounds_mat = get_ast_bound_matrice(ast);
-    std::cout<<"aftera isl bounds"<<std::endl;
     
     std::vector<std::vector<std::vector<int>>> repeated;
      
@@ -719,9 +714,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                
       
         }
-        std::cout<<"before transform ast"<<std::endl;
         child->transform_ast();
-        std::cout<<"after transform asts"<<std::endl;
         if (!child->ast_is_legal()) {
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 // print deleted Ast
@@ -800,7 +793,6 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 perror("fork failed");
                 exit(1);
             } else if (pid == 0) {
-                std::cout<<"about to evaluate"<<std::endl;
                 measurements.push_back(eval_func->evaluate(*(child)));
                 int size =measurements.size();
                 float ar[measurements.size()];
@@ -919,7 +911,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
             if (std::atoi(read_env_var("AS_VERBOSE"))==1){
                 std::cout << "Schedule number "<< schedules_annotations->size() << std::endl;
-                std::cout << "Evaluation : " << child->evaluation << std::endl;
+                std::cout << "Speed up : " << -child->evaluation << std::endl;
                 std::cout << "Number of measurements : " << measurements.size() << std::endl;
                 std::cout << "===================================" << std::endl << std::endl;
             }

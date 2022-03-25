@@ -40,7 +40,11 @@ with torch.no_grad():
 
             schedule_vector = get_schedule_representation(prog_json, sched_json, comp_repr_template, placeholders_indices_dict)
             
-            speedup = model.forward(torch.FloatTensor(schedule_vector))
+            batched_schedule_vector = torch.FloatTensor(schedule_vector)
+
+            batched_schedule_vector = batched_schedule_vector[None, :]
+            
+            speedup = model.forward(batched_schedule_vector)
             print(float(speedup.item()))
             
     except EOFError:
