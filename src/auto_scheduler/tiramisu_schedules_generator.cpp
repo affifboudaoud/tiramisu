@@ -663,7 +663,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     }
     // second skewing pattern
     
-    std::cout<<"dscew 2"<<std::endl;
+    
     if(add_random_skew){
         for(int i=0;i<rand_skew;i++){
             std::vector <  std::vector<int> >  matrix(depth);
@@ -690,7 +690,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     }
     bool saw_zero = false;
     int cpt = 0;
-    std::cout<<"skew 3"<<std::endl;
+    
     
     if(add_3d_skew){
         for(int i=0;i<d3_skew;i++){

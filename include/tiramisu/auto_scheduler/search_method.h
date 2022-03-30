@@ -126,6 +126,7 @@ public:
      */
     virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+    virtual void explore_parallelisation(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     
     
 };
@@ -170,6 +171,7 @@ public:
      */
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+
 };
 
 // ----------------------------------------------------------------------- //
