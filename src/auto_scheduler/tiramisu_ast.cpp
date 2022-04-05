@@ -1909,8 +1909,11 @@ state_computation::state_computation(state_computation * reference)
     {
         this->evaluation = ast->evaluation;
         this->exploration_depth = ast->search_depth + 1;
+        std::cout<<"exploration_depth"<<this->exploration_depth<<std::endl;
+
         this->candidate_id = candidate_id;
         this->schedule_str = ast->get_schedule_str();
+        std::cout<<"schedule in candidate trace"<<ast->get_schedule_str()<<std::endl;
     }
 
     candidate_trace::~candidate_trace()
@@ -1921,8 +1924,12 @@ state_computation::state_computation(state_computation * reference)
 
     void candidate_trace::add_child_path(syntax_tree *ast, int candidate_id)
     {
+        std::cout<<"ast pointer in add child path"<<ast<<std::endl;
         candidate_trace *child_candidate = new candidate_trace(ast, candidate_id);
+        
         this->child_candidates.push_back(child_candidate);
+        std::cout<<"before add child path s "<<std::endl;
+        
         this->child_mappings.insert({ast, child_candidate});
     }
 

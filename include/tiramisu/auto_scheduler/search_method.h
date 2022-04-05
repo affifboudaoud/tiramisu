@@ -19,7 +19,7 @@ const int NB_OPTIMIZATIONS = DEFAULT_OPTIMIZATIONS_ORDER.size();
 const int NB_OPTIMIZATIONS_MATRIX = DEFAULT_OPTIMIZATIONS_ORDER_MATRIX.size();
 const int DEFAULT_MAX_DEPTH = INT_MAX;
 const int MAX_NB_STEPS = 10000;
-const int MAX_MAT_DEPTH = 4; 
+const int MAX_MAT_DEPTH = 2; 
 
 /**
   * An abstract class that represents a search method.
@@ -89,7 +89,7 @@ public:
       * The method to call to start a search.
       * The explored schedules annotation and their execution time are stored in schedules_annotations
       */
-    virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0) =0;
+    virtual void search_save_matrix(std::vector<syntax_tree*> asts, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0) =0;
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0) =0;
     
 };
@@ -124,10 +124,11 @@ public:
      * Searches for the best schedule and saves the explored schedules and their execution time
      *
      */
-    virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+    virtual void search_save_matrix(std::vector<syntax_tree*> asts, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     virtual void explore_parallelisation(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
-    
+    virtual std::vector<syntax_tree*> explore_node(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+    virtual std::vector<syntax_tree*> explore_node_classic(syntax_tree& ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     
 };
 
@@ -170,7 +171,7 @@ public:
      *
      */
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
-    virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+    virtual void search_save_matrix(std::vector<syntax_tree*> asts, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
 
 };
 
@@ -222,7 +223,7 @@ public:
      *
      */
     virtual void search_save(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
-    virtual void search_save_matrix(syntax_tree &ast, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
+    virtual void search_save_matrix(std::vector<syntax_tree*> asts, std::vector<std::string> *schedules_annotations, candidate_trace *parent_trace, float schedule_timeout=0);
     
     /**
      * A subroutine used by search(syntax_tree& ast);

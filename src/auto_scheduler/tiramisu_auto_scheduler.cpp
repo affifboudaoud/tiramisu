@@ -151,7 +151,10 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
 
     auto hashed = hasher(evaluate_by_learning_model::get_program_json(ast));
     srand(hashed);
-    searcher->search_save_matrix(ast, &schedules_annotations, &exploration_trace_root, schedule_timeout);
+    std::vector<syntax_tree*> asts;
+    asts.push_back(&ast);
+    std::cout<<"exploration root"<<&exploration_trace_root<<std::endl;
+    searcher->search_save_matrix(asts, &schedules_annotations, &exploration_trace_root, schedule_timeout);
 
     std::string output_json;
 
