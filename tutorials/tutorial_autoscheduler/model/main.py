@@ -17,7 +17,7 @@ with torch.no_grad():
     environ['layers'] = '350 400 200 180'
     environ['dropouts'] = '0.175 ' * 4
 
-    input_size = 744
+    input_size = 755
     output_size = 1
 
     layers_sizes = list(map(int, environ.get('layers', '350 400 200 180').split()))

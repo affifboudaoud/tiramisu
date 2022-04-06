@@ -112,7 +112,6 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
 
     setenv("INIT_EXEC_TIME", "0", true); // set the INIT_EXEC_TIME to 0 meaning that it's the non scheduled version
     float initial_timeout = std::atof(read_env_var("INITIAL_TIMEOUT"));
-    
     std::vector<float> initial_measurements;initial_measurements.push_back(eval_func->evaluate(ast));
     initial_exec_time = min_eval(initial_measurements);
     if (std::isinf(initial_exec_time)){

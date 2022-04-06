@@ -748,7 +748,6 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
     }
-    std::cout<<"ended generate matrices"<<std::endl;
     return this->matrices;
       
 }

@@ -647,7 +647,6 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         // the root to the hashes to avoid repeating the identity matrix
         hashes.push_back(hasher(ast.get_schedule_str()));
     }
-    
     children.resize(std::min((int)matrices.size(), (int)children.size()));
    
     
