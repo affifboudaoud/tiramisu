@@ -149,7 +149,7 @@ std::vector<float> evaluate_by_execution::get_measurements_matrix(syntax_tree& a
     fct->gen_isl_ast();
     fct->gen_halide_stmt();
     // if code generation is done, inform the parent process that is executing the get_measurements_matrix function
-    kill(getppid(), SIGUSR1);
+    //kill(getppid(), SIGUSR1);
 
     Halide::Module m = lower_halide_pipeline(fct->get_name(), halide_target, halide_arguments,
                                              Halide::Internal::LoweredFunc::External,

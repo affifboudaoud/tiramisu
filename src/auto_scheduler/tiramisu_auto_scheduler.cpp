@@ -112,7 +112,9 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
 
     setenv("INIT_EXEC_TIME", "0", true); // set the INIT_EXEC_TIME to 0 meaning that it's the non scheduled version
     float initial_timeout = std::atof(read_env_var("INITIAL_TIMEOUT"));
+    
     std::vector<float> initial_measurements;initial_measurements.push_back(eval_func->evaluate(ast));
+    
     initial_exec_time = min_eval(initial_measurements);
     if (std::isinf(initial_exec_time)){
         std::cerr << "error: Evaluation of the non scheduled version of the program failed "<< std::endl;
@@ -194,8 +196,22 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
     std::chrono::steady_clock::time_point sampling_end = std::chrono::steady_clock::now();
     if (std::atoi(read_env_var("AS_VERBOSE"))==1){
         std::cout << "Search time : " << std::chrono::duration_cast<std::chrono::milliseconds>(sampling_end - sampling_start).count() << " ms" << std::endl;
-        std::cout << "Best execution time : " << -searcher->get_best_evaluation() << std::endl;
+        std::cout << "Best speed up : " << -searcher->get_best_evaluation() << std::endl;
     }
+    
+    syntax_tree* best = searcher->get_best_ast();
+    
+
+    std::vector<float> measurements = exec_evaluator->get_measurements_matrix(*best, false, schedule_timeout);
+    std::vector<float> initial_measurements_exec = exec_evaluator->get_measurements_matrix(ast, false, schedule_timeout);
+    float speedup =  initial_measurements_exec.at(0) / measurements.at(0);
+    if (std::atoi(read_env_var("AS_VERBOSE"))==1){
+                std::cout << "predicted speedup "<< searcher->get_best_evaluation() << std::endl;
+                std::cout << "speedup : " << speedup << std::endl;
+                std::cout << "===================================" << std::endl << std::endl;
+            }
+
+
 }
 
 void auto_scheduler::find_schedule()

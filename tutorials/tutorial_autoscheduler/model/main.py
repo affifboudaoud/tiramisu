@@ -8,7 +8,7 @@ import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning) 
 warnings.filterwarnings('ignore', category=UserWarning)
 
-model_path = '/home/afif/single/tiramisu/tutorials/tutorial_autoscheduler/model/temps_save_400K_single_comp_4Layers.pkl'
+model_path = './temps_save_400K_single_comp_4Layers.pkl'
 
 with torch.no_grad():
     device = 'cpu'

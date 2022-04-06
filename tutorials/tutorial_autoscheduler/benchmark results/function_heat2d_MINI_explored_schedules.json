@@ -1,0 +1,408 @@
+{
+	"filename" : "./function_heat2d_MINI_explored_schedules.json",
+	"node_name" : "",
+	"parameters" : {
+		"beam_size" : 2, 
+		"max_depth" : 4
+	}, 
+	"program_annotation" : {"memory_size" : "0.018127" ,"iterators" : {"y" : {"lower_bound" : 1,"upper_bound" : 17,"parent_iterator" : null,"child_iterators" : ["x"],"computations_list" : []},"x" : {"lower_bound" : 1,"upper_bound" : 65,"parent_iterator" : "y","child_iterators" : [],"computations_list" : ["comp_heat2d"]}},"computations" : {"comp_heat2d" : {"absolute_order" : 1,"iterators" : ["y","x"],"comp_is_reduction" : false,"number_of_additions" : 4,"number_of_subtraction" : 0,"number_of_multiplication" : 2,"number_of_division" : 0,"write_access_relation" : "{ comp_heat2d[y, x] -> buff_heat2d[y' = y, x' = x] }","write_buffer_id" : 1,"data_type" : "float64","data_type_size" : 0,"accesses" : [{"access_is_reduction" : false,"buffer_id" : 0,"access_matrix" : [[1, 0, 0],[0, 1, 0]]},{"access_is_reduction" : false,"buffer_id" : 0,"access_matrix" : [[1, 0, 0],[0, 1, 1]]},{"access_is_reduction" : false,"buffer_id" : 0,"access_matrix" : [[1, 0, 0],[0, 1, -1]]},{"access_is_reduction" : false,"buffer_id" : 0,"access_matrix" : [[1, 0, 1],[0, 1, 0]]},{"access_is_reduction" : false,"buffer_id" : 0,"access_matrix" : [[1, 0, -1],[0, 1, 0]]}]}}}
+, 
+	"initial_execution_time" : -0.966494, 
+	"schedules_list" : [
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [],"transformation_matrix" : [],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.966494]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["0", "1", "1", "0"] ],"transformation_matrix" : ["0", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.470105]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "0", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.089484]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "0", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.043752]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.111084]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.117830]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "-7", "0", "1"] ],"transformation_matrix" : ["1", "-7", "0", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.149103]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "1", "0", "1"] ],"transformation_matrix" : ["1", "1", "0", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.367730]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-7", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.152234]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.086825]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "7", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.061651]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "3", "1"] ],"transformation_matrix" : ["1", "0", "-4", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.099671]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] ],"transformation_matrix" : ["1", "0", "-6", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.114652]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "-7", "0", "1"] ],"transformation_matrix" : ["50", "-7", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.056346]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "-3", "0", "1"] ],"transformation_matrix" : ["22", "-3", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.100613]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.019262]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-7", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.014643]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-6", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.161312]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-6", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.091842]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "6", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.063331]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.131560]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.137427]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "3", "0", "1"] ],"transformation_matrix" : ["-17", "3", "-6", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.088558]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "-3", "0", "1"] ],"transformation_matrix" : ["19", "-3", "-6", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.108286]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-13", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.120017]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.061710]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "13", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.042211]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "0", "1", "1"] ],"transformation_matrix" : ["1", "0", "-12", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.134674]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-18", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.144562]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "-7", "0", "1"] ],"transformation_matrix" : ["92", "-7", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.046187]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "1", "0", "1"] ],"transformation_matrix" : ["-12", "1", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.114072]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-18", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.020192]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-18", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.013240]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.020577]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-7", "1"] ],"transformation_matrix" : ["1", "0", "-13", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.013690]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-11", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.128740]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.066922]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "11", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.050348]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "0", "1", "1"] ],"transformation_matrix" : ["1", "0", "-10", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.128283]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "0", "-3", "1"] ],"transformation_matrix" : ["1", "0", "-14", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.139508]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "-5", "0", "1"] ],"transformation_matrix" : ["56", "-5", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.053285]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "-3", "0", "1"] ],"transformation_matrix" : ["34", "-3", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.081951]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "0", "-3", "1"] ],"transformation_matrix" : ["1", "0", "-14", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.020606]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] , ["1", "0", "-3", "1"] ],"transformation_matrix" : ["1", "0", "-14", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.013537]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.020396]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-7", "1"] , ["1", "0", "1", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-11", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.014055]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-5", "1", "1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.172723]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.095557]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["1", "0", "5", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.063461]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["1", "0", "3", "1"] ],"transformation_matrix" : ["1", "0", "-2", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.048787]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["1", "5", "0", "1"] ],"transformation_matrix" : ["-24", "5", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.076432]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["1", "-3", "0", "1"] ],"transformation_matrix" : ["16", "-3", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.114622]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.018332]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] ],"transformation_matrix" : ["1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.014765]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-5", "1", "-1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.170839]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["-1", "0", "5", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.020483]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] ],"transformation_matrix" : ["-1", "0", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.080875]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "-3", "0", "1"] ],"transformation_matrix" : ["14", "-3", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.118528]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "3", "0", "1"] ],"transformation_matrix" : ["-16", "3", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.091420]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.015932]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["-1", "0", "-5", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.013204]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["0", "1", "1", "0"] ],"transformation_matrix" : ["-8", "1", "-1", "0"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.145986]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["1", "0", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.120797]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "0", "0", "-1"] ],"transformation_matrix" : ["-1", "0", "8", "-1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.037097]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "0", "1", "1"] ],"transformation_matrix" : ["-1", "0", "-9", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.074752]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["-1", "0", "-3", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -1.089476]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "3", "0", "1"] ],"transformation_matrix" : ["-25", "3", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.079162]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "-7", "0", "1"] ],"transformation_matrix" : ["55", "-7", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : null, "skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.052537]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["1", "0", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.019721]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["-1", "0", "0", "1"] ],"transformation_matrix" : ["1", "0", "-8", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.014470]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["-1", "0", "-3", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "y","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.015652]
+}
+,
+{"comp_heat2d" : {"interchange_dims" : [],"transformation_matrices" : [["1", "0", "-5", "1"] , ["-1", "0", "0", "1"] , ["1", "0", "3", "1"] , ["1", "0", "-5", "1"] ],"transformation_matrix" : ["-1", "0", "-3", "1"],"tiling" : {},"unrolling_factor" : null,"parallelized_dim" : "x","skewing" : null},"unfuse_iterators" : [],"tree_structure": {"loop_name" : "y","computations_list" : [],"child_list" : [{"loop_name" : "x","computations_list" : ["comp_heat2d"],"child_list" : []}]}, 
+"execution_times" : [ -0.013615]
+}
+
+	], 
+"exploration_trace": { "id": 0, "schedule": "", "depth": 1, "evaluation": -0.966494, "children": [
+{ "id": 1, "schedule": "M(0,1,1,0)", "depth": 1, "evaluation": -0.470105, "children": []}
+,{ "id": 2, "schedule": "M(-1,0,0,1)", "depth": 1, "evaluation": -1.089484, "children": []}
+,{ "id": 3, "schedule": "M(1,0,0,-1)", "depth": 1, "evaluation": -1.043752, "children": []}
+,{ "id": 4, "schedule": "M(1,0,-5,1)", "depth": 1, "evaluation": -1.111084, "children": [
+{ "id": 46, "schedule": "M(-5,1,1,0)", "depth": 2, "evaluation": -0.172723, "children": []}
+,{ "id": 47, "schedule": "M(-1,0,-5,1)", "depth": 2, "evaluation": -1.095557, "children": [
+{ "id": 54, "schedule": "M(-5,1,-1,0)", "depth": 3, "evaluation": -0.170839, "children": []}
+,{ "id": 55, "schedule": "M(-1,0,5,-1)", "depth": 3, "evaluation": -1.020483, "children": []}
+,{ "id": 56, "schedule": "M(-1,0,-8,1)", "depth": 3, "evaluation": -1.080875, "children": [
+{ "id": 61, "schedule": "M(-8,1,-1,0)", "depth": 4, "evaluation": -0.145986, "children": []}
+,{ "id": 62, "schedule": "M(1,0,-8,1)", "depth": 4, "evaluation": -1.120797, "children": [
+{ "id": 68, "schedule": "M(1,0,-8,1)P(L0)", "depth": 5, "evaluation": -0.019721, "children": []}
+,{ "id": 69, "schedule": "M(1,0,-8,1)P(L1)", "depth": 5, "evaluation": -0.014470, "children": []}
+,{ "id": 62, "schedule": "M(1,0,-8,1)", "depth": 5, "evaluation": -1.120797, "children": []}
+]}
+,{ "id": 63, "schedule": "M(-1,0,8,-1)", "depth": 4, "evaluation": -1.037097, "children": []}
+,{ "id": 64, "schedule": "M(-1,0,-9,1)", "depth": 4, "evaluation": -1.074752, "children": []}
+,{ "id": 65, "schedule": "M(-1,0,-3,1)", "depth": 4, "evaluation": -1.089476, "children": [
+{ "id": 70, "schedule": "M(-1,0,-3,1)P(L0)", "depth": 5, "evaluation": -0.015652, "children": []}
+,{ "id": 71, "schedule": "M(-1,0,-3,1)P(L1)", "depth": 5, "evaluation": -0.013615, "children": []}
+,{ "id": 65, "schedule": "M(-1,0,-3,1)", "depth": 5, "evaluation": -1.089476, "children": []}
+]}
+,{ "id": 66, "schedule": "M(-25,3,-8,1)", "depth": 4, "evaluation": -0.079162, "children": []}
+,{ "id": 67, "schedule": "M(55,-7,-8,1)", "depth": 4, "evaluation": -0.052537, "children": []}
+,{ "id": 56, "schedule": "M(-1,0,-8,1)", "depth": 4, "evaluation": -1.080875, "children": []}
+]}
+,{ "id": 57, "schedule": "M(14,-3,-5,1)", "depth": 3, "evaluation": -0.118528, "children": []}
+,{ "id": 58, "schedule": "M(-16,3,-5,1)", "depth": 3, "evaluation": -0.091420, "children": []}
+,{ "id": 47, "schedule": "M(-1,0,-5,1)", "depth": 3, "evaluation": -1.095557, "children": [
+{ "id": 59, "schedule": "M(-1,0,-5,1)P(L0)", "depth": 4, "evaluation": -0.015932, "children": []}
+,{ "id": 60, "schedule": "M(-1,0,-5,1)P(L1)", "depth": 4, "evaluation": -0.013204, "children": []}
+,{ "id": 47, "schedule": "M(-1,0,-5,1)", "depth": 4, "evaluation": -1.095557, "children": []}
+]}
+]}
+,{ "id": 48, "schedule": "M(1,0,5,-1)", "depth": 2, "evaluation": -1.063461, "children": []}
+,{ "id": 49, "schedule": "M(1,0,-2,1)", "depth": 2, "evaluation": -1.048787, "children": []}
+,{ "id": 50, "schedule": "M(-24,5,-5,1)", "depth": 2, "evaluation": -0.076432, "children": []}
+,{ "id": 51, "schedule": "M(16,-3,-5,1)", "depth": 2, "evaluation": -0.114622, "children": []}
+,{ "id": 4, "schedule": "M(1,0,-5,1)", "depth": 2, "evaluation": -1.111084, "children": [
+{ "id": 52, "schedule": "M(1,0,-5,1)P(L0)", "depth": 3, "evaluation": -0.018332, "children": []}
+,{ "id": 53, "schedule": "M(1,0,-5,1)P(L1)", "depth": 3, "evaluation": -0.014765, "children": []}
+,{ "id": 4, "schedule": "M(1,0,-5,1)", "depth": 3, "evaluation": -1.111084, "children": []}
+]}
+]}
+,{ "id": 5, "schedule": "M(1,0,-7,1)", "depth": 1, "evaluation": -1.117830, "children": [
+{ "id": 8, "schedule": "M(-7,1,1,0)", "depth": 2, "evaluation": -0.152234, "children": []}
+,{ "id": 9, "schedule": "M(-1,0,-7,1)", "depth": 2, "evaluation": -1.086825, "children": []}
+,{ "id": 10, "schedule": "M(1,0,7,-1)", "depth": 2, "evaluation": -1.061651, "children": []}
+,{ "id": 11, "schedule": "M(1,0,-4,1)", "depth": 2, "evaluation": -1.099671, "children": []}
+,{ "id": 12, "schedule": "M(1,0,-6,1)", "depth": 2, "evaluation": -1.114652, "children": [
+{ "id": 17, "schedule": "M(-6,1,1,0)", "depth": 3, "evaluation": -0.161312, "children": []}
+,{ "id": 18, "schedule": "M(-1,0,-6,1)", "depth": 3, "evaluation": -1.091842, "children": []}
+,{ "id": 19, "schedule": "M(1,0,6,-1)", "depth": 3, "evaluation": -1.063331, "children": []}
+,{ "id": 20, "schedule": "M(1,0,-11,1)", "depth": 3, "evaluation": -1.131560, "children": [
+{ "id": 35, "schedule": "M(-11,1,1,0)", "depth": 4, "evaluation": -0.128740, "children": []}
+,{ "id": 36, "schedule": "M(-1,0,-11,1)", "depth": 4, "evaluation": -1.066922, "children": []}
+,{ "id": 37, "schedule": "M(1,0,11,-1)", "depth": 4, "evaluation": -1.050348, "children": []}
+,{ "id": 38, "schedule": "M(1,0,-10,1)", "depth": 4, "evaluation": -1.128283, "children": []}
+,{ "id": 39, "schedule": "M(1,0,-14,1)", "depth": 4, "evaluation": -1.139508, "children": [
+{ "id": 42, "schedule": "M(1,0,-14,1)P(L0)", "depth": 5, "evaluation": -0.020606, "children": []}
+,{ "id": 43, "schedule": "M(1,0,-14,1)P(L1)", "depth": 5, "evaluation": -0.013537, "children": []}
+,{ "id": 39, "schedule": "M(1,0,-14,1)", "depth": 5, "evaluation": -1.139508, "children": []}
+]}
+,{ "id": 40, "schedule": "M(56,-5,-11,1)", "depth": 4, "evaluation": -0.053285, "children": []}
+,{ "id": 41, "schedule": "M(34,-3,-11,1)", "depth": 4, "evaluation": -0.081951, "children": []}
+,{ "id": 20, "schedule": "M(1,0,-11,1)", "depth": 4, "evaluation": -1.131560, "children": [
+{ "id": 44, "schedule": "M(1,0,-11,1)P(L0)", "depth": 5, "evaluation": -0.020396, "children": []}
+,{ "id": 45, "schedule": "M(1,0,-11,1)P(L1)", "depth": 5, "evaluation": -0.014055, "children": []}
+,{ "id": 20, "schedule": "M(1,0,-11,1)", "depth": 5, "evaluation": -1.131560, "children": []}
+]}
+]}
+,{ "id": 21, "schedule": "M(1,0,-13,1)", "depth": 3, "evaluation": -1.137427, "children": [
+{ "id": 24, "schedule": "M(-13,1,1,0)", "depth": 4, "evaluation": -0.120017, "children": []}
+,{ "id": 25, "schedule": "M(-1,0,-13,1)", "depth": 4, "evaluation": -1.061710, "children": []}
+,{ "id": 26, "schedule": "M(1,0,13,-1)", "depth": 4, "evaluation": -1.042211, "children": []}
+,{ "id": 27, "schedule": "M(1,0,-12,1)", "depth": 4, "evaluation": -1.134674, "children": []}
+,{ "id": 28, "schedule": "M(1,0,-18,1)", "depth": 4, "evaluation": -1.144562, "children": [
+{ "id": 31, "schedule": "M(1,0,-18,1)P(L0)", "depth": 5, "evaluation": -0.020192, "children": []}
+,{ "id": 32, "schedule": "M(1,0,-18,1)P(L1)", "depth": 5, "evaluation": -0.013240, "children": []}
+,{ "id": 28, "schedule": "M(1,0,-18,1)", "depth": 5, "evaluation": -1.144562, "children": []}
+]}
+,{ "id": 29, "schedule": "M(92,-7,-13,1)", "depth": 4, "evaluation": -0.046187, "children": []}
+,{ "id": 30, "schedule": "M(-12,1,-13,1)", "depth": 4, "evaluation": -0.114072, "children": []}
+,{ "id": 21, "schedule": "M(1,0,-13,1)", "depth": 4, "evaluation": -1.137427, "children": [
+{ "id": 33, "schedule": "M(1,0,-13,1)P(L0)", "depth": 5, "evaluation": -0.020577, "children": []}
+,{ "id": 34, "schedule": "M(1,0,-13,1)P(L1)", "depth": 5, "evaluation": -0.013690, "children": []}
+,{ "id": 21, "schedule": "M(1,0,-13,1)", "depth": 5, "evaluation": -1.137427, "children": []}
+]}
+]}
+,{ "id": 22, "schedule": "M(-17,3,-6,1)", "depth": 3, "evaluation": -0.088558, "children": []}
+,{ "id": 23, "schedule": "M(19,-3,-6,1)", "depth": 3, "evaluation": -0.108286, "children": []}
+,{ "id": 12, "schedule": "M(1,0,-6,1)", "depth": 3, "evaluation": -1.114652, "children": []}
+]}
+,{ "id": 13, "schedule": "M(50,-7,-7,1)", "depth": 2, "evaluation": -0.056346, "children": []}
+,{ "id": 14, "schedule": "M(22,-3,-7,1)", "depth": 2, "evaluation": -0.100613, "children": []}
+,{ "id": 5, "schedule": "M(1,0,-7,1)", "depth": 2, "evaluation": -1.117830, "children": [
+{ "id": 15, "schedule": "M(1,0,-7,1)P(L0)", "depth": 3, "evaluation": -0.019262, "children": []}
+,{ "id": 16, "schedule": "M(1,0,-7,1)P(L1)", "depth": 3, "evaluation": -0.014643, "children": []}
+,{ "id": 5, "schedule": "M(1,0,-7,1)", "depth": 3, "evaluation": -1.117830, "children": []}
+]}
+]}
+,{ "id": 6, "schedule": "M(1,-7,0,1)", "depth": 1, "evaluation": -0.149103, "children": []}
+,{ "id": 7, "schedule": "M(1,1,0,1)", "depth": 1, "evaluation": -0.367730, "children": []}
+,{ "id": 0, "schedule": "M(1,0,0,1)", "depth": 1, "evaluation": -0.966494, "children": []}
+]}
+ 
+}
