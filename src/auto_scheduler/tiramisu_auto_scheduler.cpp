@@ -204,13 +204,24 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
 
     std::vector<float> measurements = exec_evaluator->get_measurements_matrix(*best, false, schedule_timeout);
     std::vector<float> initial_measurements_exec = exec_evaluator->get_measurements_matrix(ast, false, schedule_timeout);
-    float speedup =  initial_measurements_exec.at(0) / measurements.at(0);
+    float speedup =  *std::min_element(initial_measurements_exec.begin(), initial_measurements_exec.end()) / *std::min_element(measurements.begin(), measurements.end());
+    
     if (std::atoi(read_env_var("AS_VERBOSE"))==1){
-                std::cout << "predicted speedup "<< searcher->get_best_evaluation() << std::endl;
-                std::cout << "speedup : " << speedup << std::endl;
+                std::cout << "Initial execution time "<< *std::min_element(initial_measurements_exec.begin(), initial_measurements_exec.end()) << std::endl;
+                std::cout << "Tranformed execution time : " << *std::min_element(measurements.begin(), measurements.end()) << std::endl;
+                std::cout << "Predicted speedup "<< searcher->get_best_evaluation() << std::endl;
+                std::cout << "Real speedup : " << speedup << std::endl;
                 std::cout << "===================================" << std::endl << std::endl;
             }
+    std::ofstream myfile;
 
+    myfile.open ("/data/scratch/mmerouani/benchmark_tests_matrices_mixed_dataset_model.txt",std::ios_base::app);
+    myfile<<"\""<<filename.substr(2,filename.size()-26)<<"\",";
+    myfile << "\""<< *std::min_element(initial_measurements_exec.begin(), initial_measurements_exec.end())<<"\",";
+    myfile << "\"" << *std::min_element(measurements.begin(), measurements.end())<<"\"," ;
+    myfile << "\""<< searcher->get_best_evaluation()<<"\",";
+    myfile << "\"" << speedup <<"\""<< std::endl;
+    myfile.close();
 
 }
 
