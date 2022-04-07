@@ -1,14 +1,17 @@
+import numpy as np
 from os import environ
 import sys, json
 import torch
 from feed_forward import Model_FeedForward
 from json_to_tensor import *
+import os
+environ['MKL_THREADING_LAYER'] = 'GNU'
 
 import warnings
 warnings.filterwarnings('ignore', category=DeprecationWarning) 
 warnings.filterwarnings('ignore', category=UserWarning)
 
-model_path = './temps_save_400K_single_comp_4Layers.pkl'
+model_path = '/data/scratch/mmerouani/tiramisu2/tiramisu/tutorials/tutorial_autoscheduler/model/temps_save_400K_single_comp_4Layers.pkl'
 
 with torch.no_grad():
     device = 'cpu'
