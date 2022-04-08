@@ -214,7 +214,7 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
                 std::cout << "===================================" << std::endl << std::endl;
             }
     std::ofstream myfile;
-
+    myfile.open ("/data/scratch/mmerouani/benchmark_tests_matrices_mixed_dataset_model.txt",std::ios_base::app);
     myfile<<"\""<<filename.substr(2,filename.size()-26)<<"\",";
     myfile << "\""<< *std::min_element(initial_measurements_exec.begin(), initial_measurements_exec.end())<<"\",";
     myfile << "\"" << *std::min_element(measurements.begin(), measurements.end())<<"\"," ;
