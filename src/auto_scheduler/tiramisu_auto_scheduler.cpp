@@ -215,14 +215,13 @@ void auto_scheduler::sample_search_space_random_matrix(std::string filename, boo
             }
     std::ofstream myfile;
 
-    myfile.open ("/data/scratch/mmerouani/benchmark_tests_matrices_mixed_dataset_model.txt",std::ios_base::app);
     myfile<<"\""<<filename.substr(2,filename.size()-26)<<"\",";
     myfile << "\""<< *std::min_element(initial_measurements_exec.begin(), initial_measurements_exec.end())<<"\",";
     myfile << "\"" << *std::min_element(measurements.begin(), measurements.end())<<"\"," ;
-    myfile << "\""<< searcher->get_best_evaluation()<<"\",";
-    myfile << "\"" << speedup <<"\""<< std::endl;
+    myfile << "\""<< -searcher->get_best_evaluation()<<"\",";
+    myfile << "\"" << speedup <<"\",";
+    myfile << "\"" << best->get_schedule_str() <<"\""<< std::endl;
     myfile.close();
-
 }
 
 void auto_scheduler::find_schedule()
