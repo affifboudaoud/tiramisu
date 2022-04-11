@@ -461,7 +461,6 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     {
         skew = false;
     }
-    
     if(skew){
         for (ast_node* commun_node: shared_nodes)
         {
@@ -474,7 +473,6 @@ std::vector<int> get_equation_solution(int a, int b, int c)
                     var(loop_name),var(loop_name_inner),
                     skewing_inner_parallelism_number
                     );
-
             if(std::get<1>(result_skewing).size() > 0) // inner parallelism has solutions
             {
                 ast.recover_isl_states();
@@ -518,7 +516,6 @@ std::vector<int> get_equation_solution(int a, int b, int c)
                 }
                 ast.stage_isl_states();
             }
-
             if(std::get<0>(result_skewing).size() > 0) // outer parallelism has solutions
             {
                 ast.recover_isl_states();
@@ -563,7 +560,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
                 }
                 ast.stage_isl_states();
             }
-
+            
             if(std::get<2>(result_skewing).size() > 0) // locality has solutions
             {
                 ast.recover_isl_states();
@@ -623,16 +620,15 @@ std::vector<int> get_equation_solution(int a, int b, int c)
         }
     }
     
-    
     ast.recover_isl_states();
     // boolean for adding random skew patterns
-    bool add_3d_skew=true;
+    bool add_3d_skew=false;
     if(depth<3) add_3d_skew = false;
     // number of random 3d skews to add
     int d3_skew = 2;
 
     // add 2d random skew
-    bool add_random_skew=true;
+    bool add_random_skew=false;
     // number of random 2d skews to add
     int rand_skew = 2;
     // skew interval

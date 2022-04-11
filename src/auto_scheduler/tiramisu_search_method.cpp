@@ -636,6 +636,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // generate the matrices to be explored at this level
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
     // if this is the roor of the exploration tree 
+    std::shuffle(std::begin(matrices), std::end(matrices), rand_generator);
     if (ast.search_depth==0){
 
         optimization_info optim_info;
@@ -889,7 +890,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
                 close(fd[0]);
                 waitpid(-1,NULL,0);
             }
-                    
+            
             child->evaluation = min_eval(measurements);
 
             if(hash != parent_hash) child->nb_explored_matrices = child->nb_explored_matrices +1; 
