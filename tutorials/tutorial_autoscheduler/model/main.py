@@ -14,19 +14,19 @@ warnings.filterwarnings('ignore', category=UserWarning)
 model_path = '/data/scratch/mmerouani/tiramisu2/tiramisu/tutorials/tutorial_autoscheduler/model/temps_save_400K_single_comp_4Layers.pkl'
 
 with torch.no_grad():
-    device = 'cpu'
+     device = 'cpu'
     torch.device('cpu')
 
-    environ['layers'] = '350 400 200 180'
-    environ['dropouts'] = '0.175 ' * 4
+    environ['layers'] = '3500 3000 2300 1600 1250 1000 700 550 300 150 40 15'
+    environ['dropouts'] = '0.175 ' * 12
 
-    input_size = 755
+    input_size = 744
     output_size = 1
 
-    layers_sizes = list(map(int, environ.get('layers', '350 400 200 180').split()))
-    drops = list(map(float, environ.get('dropouts', '0.175 0.175 0.175 0.175').split()))
+    layers_sizes = list(map(int, environ.get('layers', '3500 3000 2300 1600 1250 1000 700 550 300 150 40 15').split()))
+    drops = list(map(float, environ.get('dropouts', '0.175 0.175 0.175 0.175 0.175 0.175 0.175 0.175 0.175 0.175 0.175 0.175').split()))
 
-    model = Model_FeedForward(input_size,layer_sizes= [ 350, 400, 200, 180], drops=[0.175, 0.175, 0.175,0.175])
+    model = Model_FeedForward(input_size,layer_sizes= [3500, 3000, 2300, 1600, 1250, 1000, 700, 550, 300, 150, 40, 15],drops=[0.175, 0.175, 0.175,0.175,0.175, 0.175, 0.175,0.175,0.175, 0.175, 0.175,0.175])
     model.load_state_dict(torch.load(model_path, map_location='cpu'))
     model.to(device)
     model.eval()

@@ -18,10 +18,9 @@ def get_representation_template(program_json):
     max_accesses = 15
     min_accesses = 1
     max_depth = 5 
-
+    
     comp_name = list(program_json['computations'].keys())[0] # for single comp programs, there is only one computation
     comp_dict = program_json['computations'][comp_name] 
-    
     
     
     comp_repr_template = []
@@ -33,7 +32,9 @@ def get_representation_template(program_json):
         
         # transformations placeholders
         l_code='L'+str(iter_i)
-        iterators_repr.extend([l_code+'Parallelized',
+        iterators_repr.extend([#l_code+'Interchanged', 
+                               #l_code+'Skewed', l_code+'SkewFactor', l_code+'SkewedExtent',
+                               l_code+'Parallelized',
                                l_code+'Tiled', l_code+'TileFactor']) #unrolling is skipped since it is added only once
         
     # Adding padding
@@ -43,12 +44,11 @@ def get_representation_template(program_json):
     # Adding unrolling placeholder since unrolling can only be applied to the innermost loop 
     iterators_repr.extend(['Unrolled', 'UnrollFactor'])
     
-    # Adding transformation matrix place holder
-    iterators_repr.append('TransformationMatrixStart')
-    iterators_repr.extend(['M']*((max_depth+1)**2-2))
-    iterators_repr.append('TransformationMatrixEnd')
-    
-#     print(len(iterators_repr))
+    transformation_matrix_template = [0] * (len(comp_dict['iterators']) * len(comp_dict['iterators']))  
+    iterators_repr.extend(transformation_matrix_template)
+   
+    #padding
+    iterators_repr.extend([0]*(max_depth*max_depth-len(comp_dict['iterators'])*len(comp_dict['iterators'])))
     # Adding the iterators representation to computation vector       
     comp_repr_template.extend(iterators_repr)
     
@@ -80,12 +80,13 @@ def get_representation_template(program_json):
     comp_repr_template.append(comp_dict['number_of_subtraction'])
     comp_repr_template.append(comp_dict['number_of_multiplication'])
     comp_repr_template.append(comp_dict['number_of_division'])
-#     print(len(comp_repr_template))
+    
     # Track the indices to the placeholders in a a dict
     placeholders_indices_dict = dict()
     for i, element in enumerate(comp_repr_template):
         if isinstance(element, str):
             placeholders_indices_dict[element] = i
+
     return comp_repr_template, placeholders_indices_dict
     
 def pad_access_matrix(access_matrix, max_depth):
@@ -120,6 +121,7 @@ def isl_to_write_dims(isl_map): # return the buffer iterator that defines the wr
 
 def access_is_stencil(access):
     return np.any(access['access_matrix'], axis=0)[-1]
+
 def get_datapoint_attributes(func_name, program_dict, schedule_index):
 
     schedule_json = program_dict['schedules_list'][schedule_index]
@@ -129,6 +131,7 @@ def get_datapoint_attributes(func_name, program_dict, schedule_index):
     exec_time = np.min(schedule_json['execution_times'])
     memory_use = program_dict['program_annotation']['memory_size']
     node_name = program_dict['node_name'] if 'node_name' in program_dict else 'unknown'
+    return (func_name, sched_id, sched_str, exec_time, memory_use, node_name)
 
     return (func_name, sched_id, sched_str, exec_time, memory_use, node_name)
 def simple_linear_diophantine_r(a, b):
@@ -213,33 +216,42 @@ def get_padded_transformation_matrix(program_json,schedule_json,max_depth=None):
         padded_mat = np.pad(final_mat, [(0,max_depth+1-nb_iterators),(0,max_depth+1-nb_iterators)], mode='constant', constant_values=0)
     
     return padded_mat
+def get_schedule_matrix_interchange(first_loop, second_loop, dim):
+    matrix = np.identity(dim).tolist()
+    matrix[first_loop][second_loop] = 1
+    matrix[second_loop][first_loop] = 1
+    matrix[second_loop][second_loop] = 0
+    matrix[first_loop][first_loop] = 0
+    return matrix
+
+def get_schedule_matrix_skewing(first_loop, second_loop, first_skew, second_skew, dim):
+    matrix = np.identity(dim).tolist()
+    matrix[first_loop][second_loop] = second_skew
+    matrix[first_loop][first_loop] = first_skew
+    return matrix
 def get_schedule_representation(program_json, schedule_json, comp_repr_template, placeholders_indices_dict):
     comp_repr = comp_repr_template[:]
     comp_name = list(program_json['computations'].keys())[0] # for single comp programs, there is only one computation
     comp_dict =  program_json['computations'][comp_name]
     comp_schedule_dict=schedule_json[comp_name]
-    
+    #print("comp_dict")
+    #print(comp_dict)
+    #print("schedule_json")
+    #print(schedule_json)
+    skew = 0
+    interchange = 0
+    skew_params=[0]*4
+    interchange_params=[0,0]
+    iteration_domain=[]
+    i_skew = 0
+    i=0
+    # Interchange representation
+    interchanged = 0
+    skewed = 0
     for iter_i,iterator_name in enumerate(comp_dict['iterators']):
         l_code = 'L'+str(iter_i)
         
-        # Interchange representation
-#         interchanged = 0
-#         if iterator_name in comp_schedule_dict['interchange_dims']:
-#             interchanged = 1 # interchanged = True
-#         comp_repr[placeholders_indices_dict[l_code+'Interchanged']] = interchanged
         
-        # Skewing representation
-#         skewed = 0
-#         skew_factor = 0
-#         skew_extent = 0
-#         if comp_schedule_dict['skewing'] and (iterator_name in comp_schedule_dict['skewing']['skewed_dims']):
-#             skewed = 1 #skewed: true
-#             skew_factor_index = comp_schedule_dict['skewing']['skewed_dims'].index(iterator_name)
-#             skew_factor = int(comp_schedule_dict['skewing']['skewing_factors'][skew_factor_index]) # skew factor
-#             skew_extent = int(comp_schedule_dict['skewing']['average_skewed_extents'][skew_factor_index]) # skew extent
-#         comp_repr[placeholders_indices_dict[l_code+'Skewed']] = skewed
-#         comp_repr[placeholders_indices_dict[l_code+'SkewFactor']] = skew_factor
-#         comp_repr[placeholders_indices_dict[l_code+'SkewedExtent']] = skew_extent
         
         # Parallelization representation
         parallelized = 0
@@ -256,7 +268,46 @@ def get_schedule_representation(program_json, schedule_json, comp_repr_template,
             tile_factor = int(comp_schedule_dict['tiling']['tiling_factors'][tile_factor_index]) #tile factor
         comp_repr[placeholders_indices_dict[l_code+'Tiled']] = 0
         comp_repr[placeholders_indices_dict[l_code+'TileFactor']] = tile_factor
-    
+        
+        key="transformation_matrix"
+        if key not in comp_schedule_dict.keys():
+            if iterator_name in comp_schedule_dict['interchange_dims']:
+                interchanged = 1 # interchanged = True
+                interchange_params[i]=iter_i
+                #print("if iterator_name")
+                #print(interchange_params[i])
+                i+=1
+            #comp_repr[placeholders_indices_dict[l_code+'Interchanged']] = interchanged
+            if comp_schedule_dict['skewing'] and (iterator_name in comp_schedule_dict['skewing']['skewed_dims']):
+                skew=1
+                skewed = 1 #skewed: true
+
+
+                skew_factor_index = comp_schedule_dict['skewing']['skewed_dims'].index(iterator_name)
+                skew_factor = int(comp_schedule_dict['skewing']['skewing_factors'][skew_factor_index]) # skew factor
+
+                skew_params[i_skew]=skew_factor_index
+                skew_extent = int(comp_schedule_dict['skewing']['average_skewed_extents'][skew_factor_index]) # skew extent
+                skew_params[i_skew+2]=skew_factor
+
+                i_skew+=1
+
+            inter_matrix = np.identity(len(comp_dict['iterators'])).tolist()
+            if(interchanged):
+                #print("interchange_params")
+                #print(interchange_params[0])
+                #print(interchange_params[1])
+                inter_matrix = get_schedule_matrix_interchange(interchange_params[0],interchange_params[1],len(comp_dict['iterators']))
+                #print(inter_matrix)
+
+            #skew_matrix = [[0] * len(comp_dict['iterators'])] * len(comp_dict['iterators'])
+            #for i in range(len(comp_dict['iterators'])):
+            #    skew_matrix[i][i]=1
+            skew_matrix = np.identity(len(comp_dict['iterators'])).tolist()
+
+            if(skewed):
+                skew_matrix = get_schedule_matrix_skewing(skew_params[0], skew_params[1], skew_params[2], skew_params[3], len(comp_dict['iterators']))
+
     # Unrolling Representation 
     unrolled = 0
     unroll_factor = 0
@@ -265,21 +316,47 @@ def get_schedule_representation(program_json, schedule_json, comp_repr_template,
         unroll_factor = int(comp_schedule_dict['unrolling_factor']) #unroll factor
     comp_repr[placeholders_indices_dict['Unrolled']] = 0
     comp_repr[placeholders_indices_dict['UnrollFactor']] = unroll_factor
+    # Matrix Representation
+    start = placeholders_indices_dict['UnrollFactor'] + 1
+    max_depth = 5
     
-    # Adding the transformation matrix
-    # get the matrix start and end indeces 
+    padded_matrix = np.zeros((max_depth, max_depth))
+    padded_matrix[max_depth-1][max_depth-1]= 69
+    depth = len(comp_dict['iterators'])
+    #print("transformation_matrix")
+    #print (comp_schedule_dict['transformation_matrix'])
+    # Adding padding so that the trandormations for each loop always start at the same index
+    key="transformation_matrix"
+    if key in comp_schedule_dict.keys():
+        if(len(comp_schedule_dict['transformation_matrix'])>1):
+            for i in range(max_depth):
+                for j in range(max_depth):
+                    if (i<depth and j<depth ):
+                        padded_matrix[i][j] = int(comp_schedule_dict['transformation_matrix'][(i*depth)+j])
+    else:
+       
+
+
+        transformation_matrix = np.matmul(np.array(skew_matrix), np.array(inter_matrix) ).tolist()
+        
+        # Adding padding so that the trandormations for each loop always start at the same index 
+        for i in range(max_depth):
+            for j in range(max_depth):
+                if (i<depth and j<depth):
+                    padded_matrix[i][j] = transformation_matrix[i][j]
     
-    mat_start = placeholders_indices_dict['TransformationMatrixStart']
-    mat_end = placeholders_indices_dict['TransformationMatrixEnd']
-    nb_mat_elements = mat_end - mat_start + 1
-    max_depth = int(np.sqrt(nb_mat_elements))-1 # temporarily hack to get max_depth to use it in padding
-    padded_matrix = get_padded_transformation_matrix(program_json, schedule_json, max_depth)
-#     print(nb_mat_elements, padded_matrix, max_depth)
-    assert len(padded_matrix.flatten().tolist()) == nb_mat_elements
-#     print(nb_mat_elements)
-    comp_repr[mat_start:mat_end+1] = padded_matrix.flatten().tolist() 
+    #print("padded_matrix")
+    #print(padded_matrix)
+    padded_matrix = np.array(padded_matrix).flatten().tolist()
+    for j in range( max_depth * max_depth ):
+            comp_repr[start] = padded_matrix[j]
+            start+=1
+
+   
+    
     
     return comp_repr
+
 def sched_json_to_sched_str(sched_json): # Works only for 1 comp programs
     orig_loop_nest = []
     orig_loop_nest.append(sched_json['tree_structure']['loop_name'])
