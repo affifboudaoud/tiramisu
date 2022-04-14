@@ -637,8 +637,8 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
     // if this is the roor of the exploration tree 
     std::shuffle(std::begin(matrices), std::end(matrices), rand_generator);
-    if (ast.search_depth==0){
 
+    if (ast.search_depth==0){
         optimization_info optim_info;
         optim_info.type = optimization_type::MATRIX;
         optim_info.comps = ast.computations_list;
@@ -648,6 +648,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
         // the root to the hashes to avoid repeating the identity matrix
         hashes.push_back(hasher(ast.get_schedule_str()));
     }
+    std::cout<<"Number of matrices before pruning: "<<matrices.size()<<std::endl;
     children.resize(std::min((int)matrices.size(), (int)children.size()));
    
     

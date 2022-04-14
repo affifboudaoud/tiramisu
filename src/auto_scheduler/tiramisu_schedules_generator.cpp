@@ -1,7 +1,7 @@
 #include <tiramisu/auto_scheduler/schedules_generator.h>
 #include <tiramisu/auto_scheduler/evaluator.h>
 #include <random>
-#define MAX_MATS_PER_LEVEL 20  
+#define MAX_MATS_PER_LEVEL 30  
 namespace tiramisu::auto_scheduler
 {
 
@@ -374,6 +374,75 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     std::vector<int> result = {x * (c / gcd), y * (c / gcd)};
     return result;
 }
+std::vector<int> get_equation_solution(int f_i, int f_j)
+{
+        int n1 = abs(f_i);
+        int n2 = abs(f_j);
+
+        while (n1 != n2)
+        {
+            if (n1 > n2)
+                n1 -= n2;
+            else
+                n2 -= n1;
+        }
+
+        DEBUG(3, tiramisu::str_dump("The gcd of f_i = " + std::to_string(f_i) + " and fj = " + std::to_string(f_j) + " is pgcd = " + std::to_string(n1)));
+
+        // Update f_i and f_j to equivalent but prime between themselfs value
+        f_i = f_i / n1;
+        f_j = f_j / n1;
+
+        int gamma = 0;
+        int sigma = 1;
+        bool found = false;
+
+        if ((f_j == 1) || (f_i == 1))
+        {
+            gamma = f_i - 1;
+            sigma = 1;
+            /* Since sigma = 1  then
+            f_i - gamma * f_j = 1 & using the previous condition :
+             - f_i = 1 : then gamma = 0 (f_i-1) is enough
+             - f_j = 1 : then gamma = f_i -1  */
+        }
+        else
+        {
+            if ((f_j == -1) && (f_i > 1))
+            {
+                gamma = 1;
+                sigma = 0;
+            }
+            else
+            { //General case : solving the Linear Diophantine equation & finding basic solution (sigma & gamma) for : f_i* sigma - f_j*gamma = 1
+                int i = 0;
+                while ((i < 100) && (!found))
+                {
+                    if (((sigma * f_i) % abs(f_j)) == 1)
+                    {
+                        found = true;
+                    }
+                    else
+                    {
+                        sigma++;
+                        i++;
+                    }
+                };
+
+                if (!found)
+                {
+                    // Detect infinite loop and prevent it in case where f_i and f_j are not prime between themselfs
+                    ERROR(" Error in solving the Linear Diophantine equation f_i* sigma - f_j*gamma = 1  ", true);
+                }
+
+                gamma = ((sigma * f_i) - 1) / f_j;
+            }
+        }
+        std::vector<int> result;
+        result.push_back(gamma);
+        result.push_back(sigma);
+        return result;
+}
   std::vector <std::vector < std::vector<int> >>  ml_model_schedules_generator::get_matrices(syntax_tree& ast,int depth)
 {
    
@@ -622,17 +691,17 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     
     ast.recover_isl_states();
     // boolean for adding random skew patterns
-    bool add_3d_skew=false;
+    bool add_3d_skew=true;
     if(depth<3) add_3d_skew = false;
     // number of random 3d skews to add
     int d3_skew = 2;
-
+    int d3_skew_line = 1;
     // add 2d random skew
     bool add_random_skew=false;
     // number of random 2d skews to add
     int rand_skew = 2;
     // skew interval
-    int max_skew=7; 
+    int max_skew=2; 
     if(add_random_skew){
         for(int i=0;i<rand_skew;i++){
             std::vector <  std::vector<int> >  matrix(depth);
@@ -677,7 +746,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             int l0 =(rand() % (depth-1))+1;
             int l1 = rand() % l0;
             // generate the factor randomly in the interval [-max_skew, max_skew] - {0}
-            int l0_fact = (rand() %(max_skew)*2) - 7;
+            int l0_fact = (rand() %(max_skew)*2) - max_skew;
             if (l0_fact==0) l0_fact++;
             matrix.at(l1).at(l0) = l0_fact;
             // if we haven't added this skew patter yet
@@ -689,8 +758,8 @@ std::vector<int> get_equation_solution(int a, int b, int c)
     
     
     if(add_3d_skew){
-        for(int i=0;i<d3_skew;i++){
-            saw_zero = false;
+        for(int i=0;i<d3_skew_line;i++){
+            saw_zero = cpt==depth-3;
             cpt = 0;
             std::vector <  std::vector<int> >  matrix(depth);
             for(int l = 0; l<depth; l++){
@@ -708,7 +777,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             
             for(int j=0;j<depth;j++){
                 // we only add a zero a limited number of times
-                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
+                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - max_skew;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - max_skew;}
                 if(l0_fact == 0) cpt++;
                 if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
                 if (j!=l0)matrix.at(l0).at(j) = l0_fact;
@@ -716,9 +785,10 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             // if we haven't added this skew patter yet
             if(!is_repeated(matrix, this->matrices)){this->matrices.push_back(matrix);}else{i--;}
         }
-        
+
+
         for(int i=0;i<d3_skew;i++){
-            saw_zero = false;
+            saw_zero = cpt==depth-3;
             cpt = 0;
             std::vector <  std::vector<int> >  matrix(depth);
             for(int l = 0; l<depth; l++){
@@ -735,7 +805,7 @@ std::vector<int> get_equation_solution(int a, int b, int c)
             int l0_fact;
             for(int k=0;k<depth;k++){
                 // we only add a zero a limited number of times
-                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - 7;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - 7;}
+                if (saw_zero){l0_fact = (rand() %(max_skew)*2) - max_skew;if (l0_fact==0) l0_fact++;}else{l0_fact = (rand() %(max_skew)*2) - max_skew;}
                 if(l0_fact == 0) cpt++;
                 if(l0_fact == 0 && cpt==depth-3) saw_zero = true;
                 if (k!=l0)matrix.at(k).at(l0) = l0_fact;
