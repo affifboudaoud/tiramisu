@@ -385,11 +385,12 @@ void beam_search::search_save(syntax_tree& ast, std::vector<std::string> *schedu
     parent_trace->add_child_path(ast_copy, parent_trace->get_candidate_id()); // keeps the same id since it's just copy
 
     // Sort children from smallest evaluation to largest
-    std::sort(children.begin(), children.end(), [](syntax_tree *a, syntax_tree *b) {
-        return a->evaluation < b->evaluation;
-    });
+    //std::sort(children.begin(), children.end(), [](syntax_tree *a, syntax_tree *b) {
+    //    return a->evaluation < b->evaluation;
+    //});
+    
     // shuffle the children so that they are selected a random
-//    std::shuffle(std::begin(children), std::end(children), rand_generator);
+    std::shuffle(std::begin(children), std::end(children), rand_generator);
     
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < children.size(); ++i)
@@ -879,6 +880,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
    
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
     
+    std::shuffle(std::begin(matrices), std::end(matrices), rand_generator);
     // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
 
@@ -1191,12 +1193,12 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
 
     
     // Sort children from smallest evaluation to largest
-    std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
-       return a->evaluation < b->evaluation;
-    });
+    //std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
+    //   return a->evaluation < b->evaluation;
+    //});
 
     // shuffle the children so that they are selected a random
-    //std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
+    std::shuffle(std::begin(to_be_explored), std::end(to_be_explored), rand_generator);
     
     // keep the top 'beam_size' children and delete the rest
     for (int i = beam_size; i < to_be_explored.size(); ++i)
