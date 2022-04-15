@@ -879,7 +879,7 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     // generate the matrices to be explored at this level
    
     std::vector <std::vector < std::vector<int> >> matrices = scheds_gen->get_matrices(ast, ast.get_program_depth());
-    
+
     std::shuffle(std::begin(matrices), std::end(matrices), rand_generator);
     // if this is the roor of the exploration tree 
     if (ast.search_depth==0){
@@ -1185,12 +1185,6 @@ void beam_search::search_save_matrix(syntax_tree& ast, std::vector<std::string> 
     
                     
     parent_trace->add_child_path(ast_copy, parent_trace->get_candidate_id());
-    
-    for (syntax_tree *child : to_be_explored)
-    {
-        explore_parallelisation(*child, schedules_annotations, parent_trace->child_mappings[child], schedule_timeout);
-    }
-
     
     // Sort children from smallest evaluation to largest
     //std::sort(to_be_explored.begin(), to_be_explored.end(), [](syntax_tree *a, syntax_tree *b) {
