@@ -124,11 +124,23 @@ namespace tiramisu
         return fct->loop_parallelization_is_legal(i, fused_computations);
     }
 
-    bool loop_unrolling_is_legal(tiramisu::var i, std::vector<tiramisu::computation *> fused_computations)
-    {
-        function *fct = global::get_implicit_function();
-        return fct->loop_unrolling_is_legal(i, fused_computations);
-    }
+bool loop_parallelization_is_legal(int i, std::vector<tiramisu::computation *> fused_computations)
+{
+    function *fct = global::get_implicit_function();
+    return fct->loop_parallelization_is_legal(i,fused_computations);
+}
+
+bool loop_unrolling_is_legal(tiramisu::var i, std::vector<tiramisu::computation *> fused_computations)
+{
+    function *fct = global::get_implicit_function();
+    return fct->loop_unrolling_is_legal(i,fused_computations);
+}
+
+bool loop_unrolling_is_legal(int i, std::vector<tiramisu::computation *> fused_computations)
+{
+    function *fct = global::get_implicit_function();
+    return fct->loop_unrolling_is_legal(i,fused_computations);
+}
 
     bool loop_vectorization_is_legal(tiramisu::var i, std::vector<tiramisu::computation *> fused_computations)
     {
@@ -1320,7 +1332,7 @@ namespace tiramisu
 
     void tiramisu::computation::unroll(tiramisu::var L0_var, int v, tiramisu::var L0_outer, tiramisu::var L0_inner)
     {
-        
+
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
 
@@ -1353,13 +1365,13 @@ namespace tiramisu
         }
 
         this->get_function()->align_schedules();
-        
+
         DEBUG_INDENT(-4);
     }
 
     void tiramisu::computation::unroll(int L0, int v)
     {
-        
+
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
 
@@ -1375,9 +1387,9 @@ namespace tiramisu
         {
             this->get_update(0).tag_unroll_level(L0, v);
         }
-       
+
         this->get_function()->align_schedules();
-        
+
 
         DEBUG_INDENT(-4);
     }
@@ -2786,9 +2798,9 @@ namespace tiramisu
     {
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
-        
+
         isl_map *sched = this->get_schedule();
-        
+
         assert(sched != NULL);
 
         for (int i = 0; i < this->get_loop_levels_number(); i++)
@@ -2799,8 +2811,8 @@ namespace tiramisu
 
 
         this->set_schedule(sched);
-        
-        
+
+
         DEBUG_INDENT(-4);
     }
 
@@ -3099,7 +3111,7 @@ namespace tiramisu
 
         DEBUG_FCT_NAME(3);
         DEBUG_INDENT(4);
-       
+
         isl_map *schedule = this->get_schedule();
         DEBUG(3, tiramisu::str_dump("Original schedule: ", isl_map_to_str(schedule)));
         DEBUG(3, tiramisu::str_dump("Matrix_transformation the dimensions " + std::to_string(matrix.size())));
@@ -3107,16 +3119,16 @@ namespace tiramisu
         int n_dims = isl_map_dim(schedule, isl_dim_out);
 
         std::vector<isl_id *> dimensions;
-    
+
         std::vector<std::string> dim_vector;
-        
+
 
         // ------------------------------------------------------------
         // Create a map for the duplicate schedule.
         // ------------------------------------------------------------
-        
+
         std::string map = "{ " + this->get_name() + "[";
-     
+
         for (int i = 0; i < n_dims; i++)
         {
             if (i == 0)
@@ -3140,15 +3152,15 @@ namespace tiramisu
                 map = map + ",";
             }
         }
-        
+
         map = map + "] ->" + this->get_name() + "[";
-        
+
         std::vector<std::string> temp_vector;
         std::string vector_content;
         int t = 1;
-      
+
         for (int i = 0; i < matrix.size(); i++) {
-        
+
             for (int j = 0; j < matrix[i].size(); j++){
                 if(j != matrix[i].size()-1){
                     vector_content = vector_content + std::to_string(matrix[i][j]) + dim_vector[t] + "+";
@@ -3161,10 +3173,10 @@ namespace tiramisu
             }
             t=1;
             temp_vector.push_back(vector_content);
-            vector_content.clear();     
+            vector_content.clear();
         }
-        
-        
+
+
         t = 0;
         for (int i = 0; i < n_dims; i++)
         {
@@ -3190,7 +3202,7 @@ namespace tiramisu
         }
 
         map = map + "]}";
-        
+
 
         DEBUG(3, tiramisu::str_dump("A map that transforms the duplicate"));
         DEBUG(3, tiramisu::str_dump(map.c_str()));
@@ -3223,7 +3235,7 @@ namespace tiramisu
 
         int inDim0 = loop_level_into_dynamic_dimension(L0);
         int inDim1 = loop_level_into_dynamic_dimension(L1);
-        
+
         assert(inDim0 >= 0);
         assert(inDim0 < isl_space_dim(isl_map_get_space(this->get_schedule()),
                                       isl_dim_out));
@@ -4837,7 +4849,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         return overall_corectness;
     }
     bool is_number(const std::string& s)
-    {   
+    {
         std::string delimiter = "{ [(";
         std::string expr = s.substr(s.find(delimiter)+4, s.size());
         std::string delimiter1 = ")] :";
@@ -4919,16 +4931,16 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
             reverse);
 
         DEBUG(10, tiramisu::str_dump(" to initial set  " + std::string(isl_set_to_str(reversed_set))));
-        
+
         isl_set *normal_set = isl_set_apply(reversed_set, normal_schedule);
 
         DEBUG(10, tiramisu::str_dump(" dimension number is : " + std::to_string(dimension_index)));
-        
+
         DEBUG(3, tiramisu::str_dump(" set with applied constraints : " + std::string(isl_set_to_str(normal_set))));
-        
+
         isl_pw_aff *max = isl_set_dim_max(isl_set_copy(normal_set), dimension_index);
         isl_pw_aff *min = isl_set_dim_min(isl_set_copy(normal_set), dimension_index);
- 
+
         // count the number of element that forms the max & min for the specified var
 
         DEBUG(3, tiramisu::str_dump(" max is  : " + std::string(isl_pw_aff_to_str(max))));
@@ -5900,7 +5912,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         DEBUG_INDENT(4);
 
         this->name_unnamed_time_space_dimensions();
-       
+
         this->gen_time_space_domain();
         isl_set *set = this->get_trimmed_time_processor_domain();
         assert(set != NULL);
@@ -5954,7 +5966,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
 
         DEBUG(10, tiramisu::str_dump("The maximal AST depth is : " + std::to_string(depth)));
         DEBUG_INDENT(-4);
-         
+
         return depth;
     }
 
@@ -6031,12 +6043,12 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         ast_build = isl_ast_build_set_iterators(ast_build, iterators);
 
         isl_ast_node *node = isl_ast_build_node_from_schedule_map(ast_build, isl_union_map_from_map(map));
-        
+
         // handle the case when the actual number of for loops is less than the target unrolled loop
         isl_ast_node* node1 = node;
         int cpt = 0;
         bool stop = false;
-        // calculate the number of for loops 
+        // calculate the number of for loops
         while(!stop){
             if(isl_ast_node_get_type(node1) == isl_ast_node_for ){
                 cpt++;
@@ -6047,7 +6059,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
             }
             else if(isl_ast_node_get_type(node1) == isl_ast_node_if){
                 node1 = isl_ast_node_if_get_then(node1);
-            }             
+            }
         }
         // if the number of for levels is less or equal to the unrolled loop, skip the optimization (exception handled when getting measurements)
         if(cpt <= dim){throw UnrollingException();}
@@ -6083,20 +6095,20 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
         DEBUG_INDENT(4);
 
         DEBUG(3, tiramisu::str_dump("Applying separateAndSplit on loop level " + std::to_string(L0) + " with a split factor of " + std::to_string(v)));
-        
+
         this->gen_time_space_domain();
 
         // Compute the depth before any scheduling.
         int original_depth = this->compute_maximal_AST_depth();
-        
+
         DEBUG(3, tiramisu::str_dump("Computing upper bound at loop level " + std::to_string(L0)));
-        
+
         tiramisu::expr loop_upper_bound =
             tiramisu::expr(o_cast, global::get_loop_iterator_data_type(),
                            tiramisu::utility::get_bound(this->get_trimmed_time_processor_domain(), L0, true));
 
         DEBUG(3, tiramisu::str_dump("Computing lower bound at loop level " + std::to_string(L0)));
-        
+
         tiramisu::expr loop_lower_bound =
             tiramisu::expr(o_cast, global::get_loop_iterator_data_type(),
                            tiramisu::utility::get_bound(this->get_trimmed_time_processor_domain(), L0, false));
@@ -6131,24 +6143,24 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
      * (the full or the separated domains) and schedule one after the other.
      */
         this->separate(L0, loop_bound, v, loop_lower_bound);
-        
+
         // Make a copy of the schedule before splitting so that we revert the
         // schedule if splitting did not have any effect (i.e., did not happen).
         //std::cout<<"Schdule : "<<isl_map_to_str(this->get_schedule())<<"\n";
         isl_map *sc = isl_map_copy(this->get_schedule());
-        
+
         /**
      * Split the full computation since the full computation will be vectorized.
      */
         //this->get_update(0).split(L0, v);
-        
-        
+
+
         this->get_update(0).split_with_lower_bound(L0, v, lower_without_cast);
 
         // Compute the depth after scheduling.
-         
+
         int depth = this->compute_maximal_AST_depth();
-         
+
         bool split_happened = false;
         if (depth == original_depth)
         {
@@ -6163,7 +6175,7 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
             split_happened = true;
             DEBUG(3, tiramisu::str_dump("Split happenned."));
         }
-     
+
         this->get_function()->align_schedules();
 
         DEBUG_INDENT(-4);
@@ -6494,9 +6506,9 @@ void computation::skew(int L0, int L1, int L2, int L3, int factor)
               outDim0_str + " = floor(" + inDim0_str + "/" +
               std::to_string(sizeX) + ") and " + outDim1_str + " = (" +
               inDim0_str + " %" + std::to_string(sizeX) + ") and " + static_dim_str + " = 0}";
-        
+
         isl_map *transformation_map = isl_map_read_from_str(this->get_ctx(), map.c_str());
-        
+
         for (int i = 0; i < dimensions.size(); i++)
             transformation_map = isl_map_set_dim_id(
                 transformation_map, isl_dim_out, i, isl_id_copy(dimensions[i]));
